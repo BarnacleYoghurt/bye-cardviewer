@@ -1,0 +1,23 @@
+{
+  "name": "bye-cardviewer/card",
+  "apiVersion": 2,
+  "version": "0.0.5",
+  "title": "BYE Card",
+  "editorScript": "file:./index.js",
+  "style": "file:./styles.css",
+  "category": "bye-blocks",
+  "icon": "interactive",
+  "description": "Displays information on a card from BYE.",
+  "attributes":
+  {
+    "expansion": {
+      "type": "string"
+    },
+    "cardId": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    }
+  }
+}

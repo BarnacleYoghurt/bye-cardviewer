@@ -1,0 +1,11 @@
+{
+  "name": "bye-cardviewer/helloworld",
+  "apiVersion": 2,
+  "version": "0.1.0",
+  "title": "Hello World (test for multi-block setup)",
+  "editorScript": "file:../../build/index.js",
+  "style": "file:../../build/index.css",
+  "category": "bye-blocks",
+  "icon": "interactive",
+  "description": "For testing project setup with multiple blocks."
+}

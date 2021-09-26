@@ -1,0 +1,23 @@
+{
+	"name": "bye-cardviewer",
+	"version": "0.1.0",
+	"description": "Displays information on a card from BYE.",
+	"author": "The WordPress Contributors",
+	"license": "GPL-2.0-or-later",
+	"main": "src/index.js",
+	"scripts": {
+		"build": "wp-scripts build"
+	},
+	"dependencies": {
+		"@wordpress/block-editor": "^7.0.2",
+		"@wordpress/blocks": "^11.1.0"
+	},
+	"devDependencies": {
+		"webpack": "^5.54.0",
+		"del": "^6.0.0",
+		"@wordpress/scripts": "^18.0.1",
+		"@babel/cli": "^7.15.7",
+		"@babel/preset-env": "^7.15.6",
+		"@wordpress/babel-preset-default": "^6.3.2"
+	}
+}
