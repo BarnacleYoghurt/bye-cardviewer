@@ -7,18 +7,18 @@
   background-color: rgba(0,0,0,0.3);
   color: #fff;
   padding: 20px;
-  grid-template-rows: 3ch 2ch auto;
+  grid-template-rows: 3ch 2ch 2ch auto;
   grid-template-columns: 40% auto;
   column-gap: 20px;
 
   @include media-mobile {
-    grid-template-rows: auto auto auto auto;
+    grid-template-rows: auto auto auto auto auto;
     grid-template-columns: auto;
     column-gap: 20px;
   }
 
   .bye-card-image {
-    grid-row: 1 / span 3;
+    grid-row: 1 / span 4;
     grid-column: 1;
 
     img {
@@ -60,14 +60,24 @@
     }
   }
 
-  .bye-card-cardtext {
+  .bye-card-cardstats {
     grid-row: 3;
+    grid-column: 2;
+
+    @include media-mobile {
+      grid-row: 4;
+      grid-column: 1;
+    }
+  }
+
+  .bye-card-cardtext {
+    grid-row: 4;
     grid-column: 2;
     border-top: 1px solid white;
     margin-top: 1ch;
 
     @include media-mobile {
-      grid-row: 4;
+      grid-row: 5;
       grid-column: 1;
     }
   }

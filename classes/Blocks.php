@@ -41,9 +41,39 @@ class Blocks
         $el_img = sprintf('<a class="bye-card-image" href="%s"><img src="%s"/></a>',$image_url,$image_url);
         $el_cardname = sprintf('<h3 class="bye-card-cardname">%s</h3>',$carddata->name);
         $el_cardtype = sprintf('<span class="bye-card-cardtype">%s</span>',$carddata->type);
+        if (($carddata->type & 0x1) == 0x1) {
+            $el_cardstats = sprintf('<span class="bye-card-cardstats">%s %s %s %s</span>',
+                $this->format_level($carddata->level, $carddata->type),
+                $this->format_attribute($carddata->attribute, $carddata->type),
+                $this->format_race($carddata->race, $carddata->type),
+                $this->format_atkdef($carddata->atk,$carddata->def, $carddata->type));
+        }
+        else {
+            $el_cardstats = '';
+        }
         $el_cardtext = sprintf('<p class="bye-card-cardtext">%s</p>',$carddata->description);
 
-        return sprintf('<div class="wp-block-bye-card">%s%s%s%s</div>',$el_img,$el_cardname,$el_cardtype,$this->format_cardtext($el_cardtext));
+        return sprintf('<div class="wp-block-bye-card">%s%s%s%s%s</div>',$el_img,$el_cardname,$el_cardtype,$el_cardstats, $this->format_cardtext($el_cardtext));
+    }
+
+    function format_cardtype($type) {
+        return $type;
+    }
+
+    function format_level($level, $type) {
+        return sprintf('Level %s', $level);
+    }
+
+    function format_attribute($attribute, $type) {
+        return $attribute;
+    }
+
+    function format_race($race, $type) {
+        return $race;
+    }
+
+    function format_atkdef($atk, $def, $type) {
+        return sprintf("ATK %s / DEF %s", $atk, $def);
     }
 
     function format_cardtext($text) {
