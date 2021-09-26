@@ -4,7 +4,7 @@ namespace bye_plugin;
 
 class Database
 {
-    private const DB_VERSION = '0.0.2';
+    private const DB_VERSION = '0.0.3';
     private const TN_EXPANSIONS = 'bye_expansions';
     private const TN_CARDS = 'bye_cards';
     private const TN_CARDTEXTS = 'bye_cardtexts';
@@ -55,7 +55,7 @@ class Database
                 "CREATE TABLE {$this->table_cardtexts()} (
                     id INT NOT NULL AUTO_INCREMENT,
                     card_id INT NOT NULL,
-                    lang char(2) NOT NULL,
+                    lang char(2) NOT NULL DEFAULT 'en',
                     name varchar(255) NOT NULL,
                     description TEXT NOT NULL DEFAULT '',
                     PRIMARY KEY (id)
