@@ -1,0 +1,1 @@
+The BYE Cardviewer Wordpress plugin is meant to provide an easier and prettier way of displaying the custom cards of the Bionicle YGOPro Expansion on the [official website](https://bye-project.xyz). It supports displaying cards from different expansion packs, versions, and languages.
