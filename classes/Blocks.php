@@ -41,10 +41,10 @@ class Blocks
         $el_img = sprintf('<a class="bye-card-image" href="%s"><img src="%s"/></a>',$image_url,$image_url);
         $el_cardname = sprintf('<h3 class="bye-card-cardname">%s</h3>',$carddata->getName());
         $el_cardtype = sprintf('<span class="bye-card-cardtype">%s</span>',$carddata->getTypeName());
-        $el_cardstats = $this->format_cardstats($carddata);
-        $el_cardtext = sprintf('<p class="bye-card-cardtext">%s</p>',$carddata->getDescription());
+        $el_cardstats = sprintf('<span class="bye-card-cardstats">%s</span>', $this->format_cardstats($carddata));
+        $el_cardtext = sprintf('<p class="bye-card-cardtext">%s</p>',$this->format_cardtext($carddata->getDescription()));
 
-        return sprintf('<div class="wp-block-bye-card">%s%s%s%s%s</div>',$el_img,$el_cardname,$el_cardtype,$el_cardstats, $this->format_cardtext($el_cardtext));
+        return sprintf('<div class="%s">%s%s%s%s%s</div>',$block_attributes['className'],$el_img,$el_cardname,$el_cardtype,$el_cardstats, $el_cardtext);
     }
 
     function format_cardstats($carddata) {
@@ -94,7 +94,7 @@ class Blocks
                 $stats = sprintf('%s / DEF %d', $stats, $carddata->getDef());
             }
 
-            return sprintf('<span class="bye-card-cardstats">%s</span>',$stats);
+            return $stats;
         }
         else {
             return '';
