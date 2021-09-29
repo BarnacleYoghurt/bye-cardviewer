@@ -41,39 +41,64 @@ class Blocks
         $el_img = sprintf('<a class="bye-card-image" href="%s"><img src="%s"/></a>',$image_url,$image_url);
         $el_cardname = sprintf('<h3 class="bye-card-cardname">%s</h3>',$carddata->getName());
         $el_cardtype = sprintf('<span class="bye-card-cardtype">%s</span>',$carddata->getTypeName());
-        if ($carddata->isMonster()) {
-            $el_cardstats = sprintf('<span class="bye-card-cardstats">%s %s %s %s</span>',
-                $this->format_level($carddata->getLevel(), $carddata->getType()),
-                $this->format_attribute($carddata->getAttribute(), $carddata->getType()),
-                $this->format_race($carddata->getRace(), $carddata->getType()),
-                $this->format_atkdef($carddata->getAtk(),$carddata->getDef(), $carddata->getType()));
-        }
-        else {
-            $el_cardstats = '';
-        }
+        $el_cardstats = $this->format_cardstats($carddata);
         $el_cardtext = sprintf('<p class="bye-card-cardtext">%s</p>',$carddata->getDescription());
 
         return sprintf('<div class="wp-block-bye-card">%s%s%s%s%s</div>',$el_img,$el_cardname,$el_cardtype,$el_cardstats, $this->format_cardtext($el_cardtext));
     }
 
-    function format_cardtype($type) {
-        return $type;
-    }
+    function format_cardstats($carddata) {
+        if ($carddata->isMonster()) {
+            if ($carddata->isXyz()) {
+                $stats = sprintf('Rank %d', $carddata->getLevel());
+            }
+            elseif ($carddata->isLink()) {
+                $arrows = '';
+                if ($carddata->isLinkArrow(CardInfo::LINK_MARKER_LEFT)) {
+                    $arrows .= '&#9664;'; //◀
+                }
+                if ($carddata->isLinkArrow(CardInfo::LINK_MARKER_TOP_LEFT)) {
+                    $arrows .= '&#8598;'; //↖
+                }
+                if ($carddata->isLinkArrow(CardInfo::LINK_MARKER_TOP)) {
+                    $arrows .= '&#9650;'; //▲
+                }
+                if ($carddata->isLinkArrow(CardInfo::LINK_MARKER_TOP_RIGHT)) {
+                    $arrows .= '&#8599;'; //↗
+                }
+                if ($carddata->isLinkArrow(CardInfo::LINK_MARKER_BOTTOM_LEFT)) {
+                    $arrows .= '&#8601;'; //↙
+                }
+                if ($carddata->isLinkArrow(CardInfo::LINK_MARKER_BOTTOM)) {
+                    $arrows .= '&#9660;'; //▼
+                }
+                if ($carddata->isLinkArrow(CardInfo::LINK_MARKER_BOTTOM_RIGHT)) {
+                    $arrows .= '&#8600;'; //↘
+                }
+                if ($carddata->isLinkArrow(CardInfo::LINK_MARKER_RIGHT)) {
+                    $arrows .= '&#9654;'; //▶
+                }
 
-    function format_level($level, $type) {
-        return sprintf('Level %s', $level);
-    }
+                $stats = sprintf('Link-%d [%s]', $carddata->getLevel(), $arrows);
+            }
+            else {
+                $stats = sprintf('Level %d', $carddata->getLevel());
+            }
 
-    function format_attribute($attribute, $type) {
-        return $attribute;
-    }
+            if ($carddata->isPendulum()) {
+                $stats = sprintf('%s | Scale %d/%d', $stats, $carddata->getLScale(), $carddata->getRScale());
+            }
 
-    function format_race($race, $type) {
-        return $race;
-    }
+            $stats = sprintf('%s | %s %s | ATK %d', $stats, $carddata->getAttributeName(), $carddata->getRaceName(), $carddata->getAtk());
+            if (!$carddata->isLink()) {
+                $stats = sprintf('%s / DEF %d', $stats, $carddata->getDef());
+            }
 
-    function format_atkdef($atk, $def, $type) {
-        return sprintf("ATK %s / DEF %s", $atk, $def);
+            return sprintf('<span class="bye-card-cardstats">%s</span>',$stats);
+        }
+        else {
+            return '';
+        }
     }
 
     function format_cardtext($text) {

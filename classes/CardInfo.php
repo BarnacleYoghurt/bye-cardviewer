@@ -62,6 +62,16 @@ class CardInfo
     public const RACE_WYRM         = 0x800000;
     public const RACE_CYBERSE      = 0x1000000;
 
+    public const LINK_MARKER_BOTTOM_LEFT  = 0x001;
+    public const LINK_MARKER_BOTTOM       = 0x002;
+    public const LINK_MARKER_BOTTOM_RIGHT = 0x004;
+    public const LINK_MARKER_LEFT         = 0x008;
+    public const LINK_MARKER_RIGHT        = 0x020;
+    public const LINK_MARKER_TOP_LEFT     = 0x040;
+    public const LINK_MARKER_TOP          = 0x080;
+    public const LINK_MARKER_TOP_RIGHT    = 0x100;
+
+
     private int $code;
     private string $version;
     private int $expansion_id;
@@ -128,6 +138,18 @@ class CardInfo
         return ($this->type & self::TYPE_MONSTER) == self::TYPE_MONSTER;
     }
 
+    public function isXyz(): bool {
+        return ($this->type & self::TYPE_XYZ) == self::TYPE_XYZ;
+    }
+
+    public function isPendulum(): bool {
+        return ($this->type & self::TYPE_PENDULUM) == self::TYPE_PENDULUM;
+    }
+
+    public function isLink(): bool {
+        return ($this->type & self::TYPE_LINK) == self::TYPE_LINK;
+    }
+
     public function getTypeName(): string {
         //Defines names for individual type constant
         //Names are combined in the order they are listed here
@@ -178,6 +200,27 @@ class CardInfo
         return $this->attribute;
     }
 
+    public function getAttributeName(): string
+    {
+        switch ($this->attribute) {
+            case self::ATTRIBUTE_EARTH:
+                return 'EARTH';
+            case self::ATTRIBUTE_WATER:
+                return 'WATER';
+            case self::ATTRIBUTE_FIRE:
+                return 'FIRE';
+            case self::ATTRIBUTE_WIND:
+                return 'WIND';
+            case self::ATTRIBUTE_LIGHT:
+                return 'LIGHT';
+            case self::ATTRIBUTE_DARK:
+                return 'DARK';
+            case self::ATTRIBUTE_DIVINE:
+                return 'DIVINE';
+        }
+        return '?';
+    }
+
     /**
      * @return int
      */
@@ -186,12 +229,93 @@ class CardInfo
         return $this->race;
     }
 
+    public function getRaceName(): string {
+        switch ($this->race) {
+            case self::RACE_WARRIOR:
+                return 'Warrior';
+            case self::RACE_SPELLCASTER:
+                return 'Spellcaster';
+            case self::RACE_FAIRY:
+                return 'Fairy';
+            case self::RACE_FIEND:
+                return 'Fiend';
+            case self::RACE_ZOMBIE:
+                return 'Zombie';
+            case self::RACE_MACHINE:
+                return 'Machine';
+            case self::RACE_AQUA:
+                return 'Aqua';
+            case self::RACE_PYRO:
+                return 'Pyro';
+            case self::RACE_ROCK:
+                return 'Rock';
+            case self::RACE_WINGEDBEAST:
+                return 'Winged Beast';
+            case self::RACE_PLANT:
+                return 'Plant';
+            case self::RACE_INSECT:
+                return 'Insect';
+            case self::RACE_THUNDER:
+                return 'Thunder';
+            case self::RACE_DRAGON:
+                return 'Dragon';
+            case self::RACE_BEAST:
+                return 'Beast';
+            case self::RACE_BEASTWARRIOR:
+                return 'Beast-Warrior';
+            case self::RACE_DINOSAUR:
+                return 'Dinosaur';
+            case self::RACE_FISH:
+                return 'Fish';
+            case self::RACE_SEASERPENT:
+                return 'Sea Serpent';
+            case self::RACE_REPTILE:
+                return 'Reptile';
+            case self::RACE_PSYCHIC:
+                return 'Psychic';
+            case self::RACE_DIVINE:
+                return 'Divine-Beast';
+            case self::RACE_CREATORGOD:
+                return 'Creator God';
+            case self::RACE_WYRM:
+                return 'Wyrm';
+            case self::RACE_CYBERSE:
+                return 'Cyberse';
+        }
+        return '`?';
+    }
+
     /**
      * @return int
      */
     public function getLevel(): int
     {
-        return $this->level;
+        if ($this->isPendulum()) {
+            return $this->level % 0x10000;
+        }
+        else {
+            return $this->level;
+        }
+    }
+
+    public function getLScale(): int
+    {
+        if ($this->isPendulum()) {
+            return $this->level / 0x1000000;
+        }
+        else {
+            return -1;
+        }
+    }
+
+    public function getRScale(): int
+    {
+        if ($this->isPendulum()) {
+            return $this->level / 0x10000;
+        }
+        else {
+            return -1;
+        }
     }
 
     /**
@@ -208,6 +332,10 @@ class CardInfo
     public function getDef(): int
     {
         return $this->def;
+    }
+
+    public function isLinkArrow($direction): bool {
+        return $this->isLink() && (($this->def & $direction) == $direction);
     }
 
     /**
