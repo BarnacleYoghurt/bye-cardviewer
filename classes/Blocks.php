@@ -39,19 +39,19 @@ class Blocks
         $carddata = $this->database->find_card($block_attributes['cardId'],$block_attributes['version']);
 
         $el_img = sprintf('<a class="bye-card-image" href="%s"><img src="%s"/></a>',$image_url,$image_url);
-        $el_cardname = sprintf('<h3 class="bye-card-cardname">%s</h3>',$carddata->name);
-        $el_cardtype = sprintf('<span class="bye-card-cardtype">%s</span>',$carddata->type);
-        if (($carddata->type & 0x1) == 0x1) {
+        $el_cardname = sprintf('<h3 class="bye-card-cardname">%s</h3>',$carddata->getName());
+        $el_cardtype = sprintf('<span class="bye-card-cardtype">%s</span>',$carddata->getTypeName());
+        if ($carddata->isMonster()) {
             $el_cardstats = sprintf('<span class="bye-card-cardstats">%s %s %s %s</span>',
-                $this->format_level($carddata->level, $carddata->type),
-                $this->format_attribute($carddata->attribute, $carddata->type),
-                $this->format_race($carddata->race, $carddata->type),
-                $this->format_atkdef($carddata->atk,$carddata->def, $carddata->type));
+                $this->format_level($carddata->getLevel(), $carddata->getType()),
+                $this->format_attribute($carddata->getAttribute(), $carddata->getType()),
+                $this->format_race($carddata->getRace(), $carddata->getType()),
+                $this->format_atkdef($carddata->getAtk(),$carddata->getDef(), $carddata->getType()));
         }
         else {
             $el_cardstats = '';
         }
-        $el_cardtext = sprintf('<p class="bye-card-cardtext">%s</p>',$carddata->description);
+        $el_cardtext = sprintf('<p class="bye-card-cardtext">%s</p>',$carddata->getDescription());
 
         return sprintf('<div class="wp-block-bye-card">%s%s%s%s%s</div>',$el_img,$el_cardname,$el_cardtype,$el_cardstats, $this->format_cardtext($el_cardtext));
     }

@@ -2,6 +2,8 @@
 
 namespace bye_plugin;
 
+include_once ("CardInfo.php");
+
 class Database
 {
     private const DB_VERSION = '0.0.3';
@@ -82,14 +84,28 @@ class Database
         add_option('bye_cardviewer_db_version', self::DB_VERSION);
     }
 
-    function find_card($code, $version, $lang = 'en') {
+    function find_card($code, $version, $lang = 'en') : CardInfo {
         global $wpdb;
-        return $wpdb->get_row($wpdb->prepare("SELECT c.*, t.* FROM {$this->table_cards()} c 
+        $raw_data = $wpdb->get_row($wpdb->prepare("SELECT c.*, t.*, e.id as expansion_id FROM {$this->table_cards()} c 
                                 JOIN {$this->table_expansions()} e ON c.expansion_id = e.id 
                                 JOIN {$this->table_cardtexts()} t ON c.id = t.card_id 
 								WHERE c.code=%d
 								AND c.version=%s
 								AND t.lang=%s", $code, $version, $lang));
+        return new CardInfo(
+            $raw_data->code,
+            $raw_data->version,
+            $raw_data->expansion_id,
+            $raw_data->type,
+            $raw_data->attribute,
+            $raw_data->race,
+            $raw_data->level,
+            $raw_data->atk,
+            $raw_data->def,
+            $raw_data->lang,
+            $raw_data->name,
+            $raw_data->description
+        );
     }
 
     function find_expansion($code) {
