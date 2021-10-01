@@ -42,7 +42,7 @@ class Blocks
         $el_cardname = sprintf('<h3 class="bye-card-cardname">%s</h3>',$carddata->getName());
         $el_cardtype = sprintf('<span class="bye-card-cardtype">%s</span>',$carddata->getTypeName());
         $el_cardstats = sprintf('<span class="bye-card-cardstats">%s</span>', $this->format_cardstats($carddata));
-        $el_cardtext = sprintf('<p class="bye-card-cardtext">%s</p>',$this->format_cardtext($carddata->getDescription()));
+        $el_cardtext = sprintf('<p class="bye-card-cardtext"><span>%s</span></p>',$this->format_cardtext($carddata->getDescription()));
 
         return sprintf('<div class="%s">%s%s%s%s%s</div>',$block_attributes['className'],$el_img,$el_cardname,$el_cardtype,$el_cardstats, $el_cardtext);
     }

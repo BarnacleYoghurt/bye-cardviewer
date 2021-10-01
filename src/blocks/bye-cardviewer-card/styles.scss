@@ -8,10 +8,10 @@
   background-color: rgba(0,0,0,0.3);
   color: #fff;
   padding: 20px;
-  grid-template-rows: repeat(4,auto);
-  grid-template-columns: repeat(2,auto);
+  grid-template-rows: repeat(3,auto) 1fr;
+  grid-template-columns: 38.2% auto; //38.2 + (38,2 * 1.618) = 100
   column-gap: 20px;
-  height: 368px; //can we make this more dynamic to the image height?
+  height: auto;
 
   .bye-card-image {
     grid-row: 1 / span 4;
@@ -52,6 +52,11 @@
     margin-top: 1ch;
     margin-bottom: 0;
     overflow-y: auto;
+    position: relative; //Needed so (position: absolute) on the internal <span> works
+
+    span {
+      position: absolute; //Makes it so the text does not affect the div's auto height
+    }
   }
 
   @include media-mobile {
@@ -84,6 +89,10 @@
     .bye-card-cardtext {
       grid-row: 5;
       grid-column: 1;
+
+      span {
+        position: relative;
+      }
     }
   }
 }
