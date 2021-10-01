@@ -8,9 +8,10 @@
   background-color: rgba(0,0,0,0.3);
   color: #fff;
   padding: 20px;
-  grid-template-rows: 3ch 2ch 2ch auto;
-  grid-template-columns: 40% auto;
+  grid-template-rows: repeat(4,auto);
+  grid-template-columns: repeat(2,auto);
   column-gap: 20px;
+  height: 368px; //can we make this more dynamic to the image height?
 
   .bye-card-image {
     grid-row: 1 / span 4;
@@ -49,12 +50,15 @@
     grid-column: 2;
     border-top: 1px solid white;
     margin-top: 1ch;
+    margin-bottom: 0;
+    overflow-y: auto;
   }
 
   @include media-mobile {
     grid-template-rows: auto auto auto auto auto;
     grid-template-columns: auto;
     column-gap: 20px;
+    height: auto;
 
     .bye-card-image {
       grid-row: 1;
