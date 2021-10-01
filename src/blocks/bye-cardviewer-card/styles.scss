@@ -12,6 +12,7 @@
   grid-template-columns: 38.2% auto; //38.2 + (38,2 * 1.618) = 100
   column-gap: 20px;
   height: auto;
+  margin-bottom: 1em;
 
   .bye-card-image {
     grid-row: 1 / span 4;
@@ -49,7 +50,7 @@
     grid-row: 4;
     grid-column: 2;
     border-top: 1px solid white;
-    margin-top: 1ch;
+    margin-top: 0.5em;
     margin-bottom: 0;
     overflow-y: auto;
     position: relative; //Needed so (position: absolute) on the internal <span> works
@@ -60,10 +61,9 @@
   }
 
   @include media-mobile {
-    grid-template-rows: auto auto auto auto auto;
+    grid-template-rows: repeat(5,auto);
     grid-template-columns: auto;
     column-gap: 20px;
-    height: auto;
 
     .bye-card-image {
       grid-row: 1;
@@ -89,6 +89,7 @@
     .bye-card-cardtext {
       grid-row: 5;
       grid-column: 1;
+      max-height: 20em;
 
       span {
         position: relative;
