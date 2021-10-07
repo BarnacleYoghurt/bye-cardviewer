@@ -91,11 +91,11 @@ class Admin
                         <?php
                     }
                     catch (Exception $e) {
-                        echo("Access to card database failed ({$e->getMessage()})");
+                        echo("<p>Access to card database failed ({$e->getMessage()})</p>");
                     }
                 }
                 else {
-                    echo("Could not accept uploaded file.");
+                    echo("<p>Could not accept uploaded file.</p>");
                 }
             }
             else { //Input CDB + metadata
