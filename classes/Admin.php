@@ -19,28 +19,50 @@ class Admin
 
     function admin_page() {
         if (current_user_can('manage_options')) {
-            if (isset($_FILES['cdb'])) {
-                try {
-                    $cdb = new SQLite3($_FILES['cdb']['tmp_name']);
-                    $cards = $cdb->query('SELECT id, name FROM texts;');
-                    ?>
+            $uploaddir = get_temp_dir();
 
-                    <form method="POST">
+            if (isset($_POST['ids'])) {
+                $filename = $_POST['version'] . '_' . $_POST['expansion'] . '.cdb';
 
-                    <?php
-                    while($card = $cards->fetchArray(SQLITE3_ASSOC)) {
+                $cdb = new SQLite3($uploaddir . $filename);
+                foreach ($_POST['ids'] as $id) {
+                    $q = $cdb->prepare('SELECT d.*, t.name, t.desc FROM datas d JOIN texts t ON d.id == t.id WHERE d.id=:id');
+                    $q->bindValue(':id', $id, SQLITE3_INTEGER);
+                    $card = $q->execute()->fetchArray(SQLITE3_ASSOC);
+                    print_r($card);
+                }
+
+                unlink($uploaddir . $filename);
+            }
+            elseif (isset($_FILES['cdb'])) {
+                $filename = $_POST['version'] . '_' . $_POST['expansion'] . '.cdb';
+
+                if (move_uploaded_file($_FILES['cdb']['tmp_name'], $uploaddir . $filename)) {
+                    try {
+                        $cdb = new SQLite3($uploaddir . $filename);
+                        $cards = $cdb->query('SELECT id, name FROM texts;');
                         ?>
-                        <div><input name="ids[]" value="<?= $card['id'] ?>" type="checkbox"/><span><?= $card['name'] ?></span></div>
+
+                        <form method="POST">
+                            <input type="hidden" name="version" value="<?= $_POST['version'] ?>"/>
+                            <input type="hidden" name="expansion" value="<?= $_POST['expansion'] ?>"/>
+                        <?php
+                        while($card = $cards->fetchArray(SQLITE3_ASSOC)) {
+                            ?>
+                            <div><input name="ids[]" value="<?= $card['id'] ?>" type="checkbox"/><span><?= $card['name'] ?></span></div>
+                            <?php
+                        }
+                        submit_button();
+                        ?>
+                        </form>
                         <?php
                     }
-
-                    ?>
-                    </form>
-                    <?php
+                    catch (Exception $e) {
+                        echo("Access to card database failed ({$e->getMessage()})");
+                    }
                 }
-                catch (Exception $e) {
-                    //TODO: handle
-                    echo($e->getMessage());
+                else {
+                    echo("Could not accept uploaded file.");
                 }
             }
             elseif (isset($_POST['code'])) {
