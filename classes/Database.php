@@ -128,15 +128,6 @@ class Database
         }
     }
 
-    function find_or_create_expansion($code) {
-        $expansion_id = $this->find_expansion($code)->id;
-        if (is_null($expansion_id)) {
-            $expansion_id = $this->create_expansion($code, $code);
-        }
-
-        return $expansion_id;
-    }
-
     function update_expansion_code($id, $code) {
         global $wpdb;
         $wpdb->update($this->table_expansions(), array('code' => $code), array('id' => $id));

@@ -39,7 +39,7 @@ class Admin
                         $q->bindValue(':id', $id, SQLITE3_INTEGER);
                         $card = $q->execute()->fetchArray(SQLITE3_ASSOC);
 
-                        $expansion_id = $this->database->find_or_create_expansion($_POST['expansion']);
+                        $expansion_id = $_POST['expansion'];
 
                         $card_insert_res = $this->database->create_card(array(
                             'code' => $id,
@@ -111,9 +111,19 @@ class Admin
                                 <td><input id="t_version" name="version" type="text" required/></td>
                             </tr>
                             <tr>
-                                <th scope="row"><label for="t_expansion" style="display:inline-block;width:16ch">Expansion
-                                        Code</label></th>
-                                <td><input id="t_expansion" name="expansion" type="text" required/></td>
+                                <th scope="row"><label for="t_expansion" style="display:inline-block;width:16ch">Expansion</label></th>
+                                <td>
+                                    <select id="c_expansion" name="expansion" type="text" required>
+                                        <?php
+                                        $expansions = $this->database->all_expansions();
+                                        foreach ($expansions as $expansion) {
+                                            ?>
+                                            <option value="<?= $expansion->id ?>"><?= $expansion->name ?></option>
+                                            <?php
+                                        }
+                                        ?>
+                                    </select>
+                                </td>
                             </tr>
                             <tr>
                                 <th scope="row"><label for="u_cdb" style="display:inline-block;width:16ch">CDB
@@ -133,14 +143,14 @@ class Admin
     function admin_page_expansions()
     {
         print_r($_POST);
-        foreach ($_POST as $k=>$v) {
+        foreach ($_POST as $k => $v) {
             if (strlen($k) >= 5 && strlen($v) > 0) {
                 switch (substr($k, 0, 5)) {
                     case 'code_':
-                        $this->database->update_expansion_code(substr($k,5), $v);
+                        $this->database->update_expansion_code(substr($k, 5), $v);
                         break;
                     case 'name_':
-                        $this->database->update_expansion_name(substr($k,5), $v);
+                        $this->database->update_expansion_name(substr($k, 5), $v);
                         break;
                 }
             }
@@ -170,17 +180,19 @@ class Admin
                         ?>
                         <tr>
                             <td><?= $expansion->id ?></td>
-                            <td><input name="code_<?= $expansion->id ?>" type="text" placeholder="<?= $expansion->code ?>"/></td>
-                            <td><input name="name_<?= $expansion->id ?>" type="text" placeholder="<?= $expansion->name ?>"/></td>
+                            <td><input name="code_<?= $expansion->id ?>" type="text"
+                                       placeholder="<?= $expansion->code ?>"/></td>
+                            <td><input name="name_<?= $expansion->id ?>" type="text"
+                                       placeholder="<?= $expansion->name ?>"/></td>
                         </tr>
                         <?php
                     }
                     ?>
-                        <tr>
-                            <td>(new)</td>
-                            <td><input name="code_new" type="text"/></td>
-                            <td><input name="name_new" type="text"/></td>
-                        </tr>
+                    <tr>
+                        <td>(new)</td>
+                        <td><input name="code_new" type="text"/></td>
+                        <td><input name="name_new" type="text"/></td>
+                    </tr>
                 </table>
                 <p><?php submit_button(); ?></p>
             </form>
