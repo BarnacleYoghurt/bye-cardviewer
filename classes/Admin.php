@@ -29,8 +29,30 @@ class Admin
                     $q = $cdb->prepare('SELECT d.*, t.name, t.desc FROM datas d JOIN texts t ON d.id == t.id WHERE d.id=:id');
                     $q->bindValue(':id', $id, SQLITE3_INTEGER);
                     $card = $q->execute()->fetchArray(SQLITE3_ASSOC);
-                    print_r($card);
+
+                    $expansion_id = $this->database->find_or_create_expansion($_POST['expansion']);
+
+                    $card_insert_res = $this->database->create_card(array(
+                        'code' => $id,
+                        'version' => $_POST['version'],
+                        'expansion_id' => $expansion_id,
+                        'type' => $card['type'],
+                        'attribute' => $card['attribute'],
+                        'race' => $card['race'],
+                        'level' => $card['level'],
+                        'atk' => $card['atk'],
+                        'def' => $card['def'],
+                        'name' => $card['name'],
+                        'description' => $card['desc']
+                    ));
+
+                    if ($card_insert_res) {
+                        echo("<div>Card {$id} ({$card['name']}) inserted into database.</div>");
+                    } else{
+                        echo("<div>Could not insert card {$id} ({$card['name']}).</div>");
+                    }
                 }
+
 
                 unlink($uploaddir . $filename);
             }

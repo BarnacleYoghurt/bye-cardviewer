@@ -123,6 +123,15 @@ class Database
         }
     }
 
+    function find_or_create_expansion($code) {
+        $expansion_id = $this->find_expansion($code)->id;
+        if (is_null($expansion_id)) {
+            $expansion_id = $this->create_expansion($code, $code);
+        }
+
+        return $expansion_id;
+    }
+
     function create_card($data) {
         global $wpdb;
         $card_data = $data;
