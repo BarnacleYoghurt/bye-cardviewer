@@ -28,10 +28,9 @@ class Admin
                     <form method="POST">
 
                     <?php
-
-                    foreach ($cards->fetchArray(SQLITE3_ASSOC) as $card) {
+                    while($card = $cards->fetchArray(SQLITE3_ASSOC)) {
                         ?>
-                        <div><input name="<?= $card['id'] ?>" type="checkbox"/><span><?= $card['name'] ?></span></div>
+                        <div><input name="ids[]" value="<?= $card['id'] ?>" type="checkbox"/><span><?= $card['name'] ?></span></div>
                         <?php
                     }
 
@@ -64,8 +63,6 @@ class Admin
             else { ?>
                 <form enctype="multipart/form-data" method="POST">
                     <div>
-                        <label for="t_code" style="display:inline-block;width:16ch">CardID</label>
-                        <input id="t_code" name="code" type="text" required/>
                         <label for="t_version" style="display:inline-block;width:16ch">Version</label>
                         <input id="t_version" name="version" type="text" required/>
                         <label for="t_expansion" style="display:inline-block;width:16ch">Expansion Code</label>
