@@ -108,6 +108,11 @@ class Database
         );
     }
 
+    function all_expansions() {
+        global $wpdb;
+        return $wpdb->get_results("SELECT * FROM {$this->table_expansions()}");
+    }
+
     function find_expansion($code) {
         global $wpdb;
         return $wpdb->get_row($wpdb->prepare("SELECT id FROM {$this->table_expansions()} WHERE code = %s;",$code));
@@ -130,6 +135,16 @@ class Database
         }
 
         return $expansion_id;
+    }
+
+    function update_expansion_code($id, $code) {
+        global $wpdb;
+        $wpdb->update($this->table_expansions(), array('code' => $code), array('id' => $id));
+    }
+
+    function update_expansion_name($id, $name) {
+        global $wpdb;
+        $wpdb->update($this->table_expansions(), array('name' => $name), array('id' => $id));
     }
 
     function create_card($data) {

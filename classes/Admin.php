@@ -13,11 +13,14 @@ class Admin
         $this->database = $database;
     }
 
-    function setup_menu() {
-        add_menu_page('BYE Cards', 'BYE Cards', 'manage_options', 'bye-cards', array($this,'admin_page'));
+    function setup_menu()
+    {
+        add_menu_page('BYE Cards', 'BYE Cards', 'manage_options', 'bye-cards', array($this, 'admin_page_cards'));
+        add_submenu_page('bye-cards', 'BYE Expansions', 'BYE Expansions', 'manage_options', 'bye-expansions', array($this, 'admin_page_expansions'));
     }
 
-    function admin_page() {
+    function admin_page_cards()
+    {
         if (current_user_can('manage_options')) {
             $uploaddir = get_temp_dir();
 
@@ -29,43 +32,42 @@ class Admin
                 <p>The following actions were performed:</p>
                 <ul>
 
-                <?php
-                $cdb = new SQLite3($uploaddir . $filename);
-                foreach ($_POST['ids'] as $id) {
-                    $q = $cdb->prepare('SELECT d.*, t.name, t.desc FROM datas d JOIN texts t ON d.id == t.id WHERE d.id=:id');
-                    $q->bindValue(':id', $id, SQLITE3_INTEGER);
-                    $card = $q->execute()->fetchArray(SQLITE3_ASSOC);
+                    <?php
+                    $cdb = new SQLite3($uploaddir . $filename);
+                    foreach ($_POST['ids'] as $id) {
+                        $q = $cdb->prepare('SELECT d.*, t.name, t.desc FROM datas d JOIN texts t ON d.id == t.id WHERE d.id=:id');
+                        $q->bindValue(':id', $id, SQLITE3_INTEGER);
+                        $card = $q->execute()->fetchArray(SQLITE3_ASSOC);
 
-                    $expansion_id = $this->database->find_or_create_expansion($_POST['expansion']);
+                        $expansion_id = $this->database->find_or_create_expansion($_POST['expansion']);
 
-                    $card_insert_res = $this->database->create_card(array(
-                        'code' => $id,
-                        'version' => $_POST['version'],
-                        'expansion_id' => $expansion_id,
-                        'type' => $card['type'],
-                        'attribute' => $card['attribute'],
-                        'race' => $card['race'],
-                        'level' => $card['level'],
-                        'atk' => $card['atk'],
-                        'def' => $card['def'],
-                        'name' => $card['name'],
-                        'description' => $card['desc']
-                    ));
+                        $card_insert_res = $this->database->create_card(array(
+                            'code' => $id,
+                            'version' => $_POST['version'],
+                            'expansion_id' => $expansion_id,
+                            'type' => $card['type'],
+                            'attribute' => $card['attribute'],
+                            'race' => $card['race'],
+                            'level' => $card['level'],
+                            'atk' => $card['atk'],
+                            'def' => $card['def'],
+                            'name' => $card['name'],
+                            'description' => $card['desc']
+                        ));
 
-                    if ($card_insert_res) {
-                        echo("<li>Card {$id} ({$card['name']}) inserted into database.</li>");
-                    } else{
-                        echo("<li>Could not insert card {$id} ({$card['name']}).</li>");
+                        if ($card_insert_res) {
+                            echo("<li>Card {$id} ({$card['name']}) inserted into database.</li>");
+                        } else {
+                            echo("<li>Could not insert card {$id} ({$card['name']}).</li>");
+                        }
                     }
-                }
-                ?>
+                    ?>
 
                 </ul>
 
                 <?php
                 unlink($uploaddir . $filename);
-            }
-            elseif (isset($_FILES['cdb'])) { //Select cards to import
+            } elseif (isset($_FILES['cdb'])) { //Select cards to import
                 $filename = $_POST['version'] . '_' . $_POST['expansion'] . '.cdb';
 
                 if (move_uploaded_file($_FILES['cdb']['tmp_name'], $uploaddir . $filename)) {
@@ -75,45 +77,47 @@ class Admin
                         ?>
 
                         <h1>BYE Card Upload Phase 2/3</h1>
-                        <p>Please select the cards you want to upload from <?= $_POST['expansion'] ?> version <?= $_POST['version'] ?></p>
+                        <p>Please select the cards you want to upload from <?= $_POST['expansion'] ?>
+                            version <?= $_POST['version'] ?></p>
                         <form method="POST">
                             <input type="hidden" name="version" value="<?= $_POST['version'] ?>"/>
                             <input type="hidden" name="expansion" value="<?= $_POST['expansion'] ?>"/>
-                        <?php
-                        while($card = $cards->fetchArray(SQLITE3_ASSOC)) {
-                            ?>
-                            <div><input name="ids[]" value="<?= $card['id'] ?>" type="checkbox"/><span><?= $card['name'] ?></span></div>
                             <?php
-                        }
-                        submit_button('Import');
-                        ?>
+                            while ($card = $cards->fetchArray(SQLITE3_ASSOC)) {
+                                ?>
+                                <div><input name="ids[]" value="<?= $card['id'] ?>"
+                                            type="checkbox"/><span><?= $card['name'] ?></span></div>
+                                <?php
+                            }
+                            submit_button('Import');
+                            ?>
                         </form>
                         <?php
-                    }
-                    catch (Exception $e) {
+                    } catch (Exception $e) {
                         echo("<p>Access to card database failed ({$e->getMessage()})</p>");
                     }
-                }
-                else {
+                } else {
                     echo("<p>Could not accept uploaded file.</p>");
                 }
-            }
-            else { //Input CDB + metadata
+            } else { //Input CDB + metadata
                 ?>
                 <div class="wrap">
                     <h1>BYE Card Upload Phase 1/3</h1>
                     <form enctype="multipart/form-data" method="POST">
                         <table class="form-table" role="presentation">
                             <tr>
-                                <th scope="row"><label for="t_version" style="display:inline-block;width:16ch">Version</label></th>
+                                <th scope="row"><label for="t_version"
+                                                       style="display:inline-block;width:16ch">Version</label></th>
                                 <td><input id="t_version" name="version" type="text" required/></td>
                             </tr>
                             <tr>
-                                <th scope="row"><label for="t_expansion" style="display:inline-block;width:16ch">Expansion Code</label></th>
+                                <th scope="row"><label for="t_expansion" style="display:inline-block;width:16ch">Expansion
+                                        Code</label></th>
                                 <td><input id="t_expansion" name="expansion" type="text" required/></td>
                             </tr>
                             <tr>
-                                <th scope="row"><label for="u_cdb" style="display:inline-block;width:16ch">CDB File</label></th>
+                                <th scope="row"><label for="u_cdb" style="display:inline-block;width:16ch">CDB
+                                        File</label></th>
                                 <td><input id="u_cdb" name="cdb" type="file" required></td>
                             </tr>
                         </table>
@@ -124,5 +128,64 @@ class Admin
                 <?php
             }
         }
+    }
+
+    function admin_page_expansions()
+    {
+        print_r($_POST);
+        foreach ($_POST as $k=>$v) {
+            if (strlen($k) >= 5 && strlen($v) > 0) {
+                switch (substr($k, 0, 5)) {
+                    case 'code_':
+                        $this->database->update_expansion_code(substr($k,5), $v);
+                        break;
+                    case 'name_':
+                        $this->database->update_expansion_name(substr($k,5), $v);
+                        break;
+                }
+            }
+        }
+
+        if (isset($_POST['code_new']) && strlen($_POST['code_new'] > 0)) {
+            $code = $_POST['code_new'];
+            $name = isset($_POST['name_new']) && strlen($_POST['name_new'] > 0) ? $_POST['name_new'] : $code;
+            $this->database->create_expansion($code, $name);
+        }
+
+
+        $expansions = $this->database->all_expansions();
+        ?>
+
+        <div class="wrap">
+            <h1>BYE Expansions</h1>
+            <form method="POST">
+                <table class="form-table" role="presentation">
+                    <tr>
+                        <th>ID</th>
+                        <th>Code</th>
+                        <th>Name</th>
+                    </tr>
+                    <?php
+                    foreach ($expansions as $expansion) {
+                        ?>
+                        <tr>
+                            <td><?= $expansion->id ?></td>
+                            <td><input name="code_<?= $expansion->id ?>" type="text" placeholder="<?= $expansion->code ?>"/></td>
+                            <td><input name="name_<?= $expansion->id ?>" type="text" placeholder="<?= $expansion->name ?>"/></td>
+                        </tr>
+                        <?php
+                    }
+                    ?>
+                        <tr>
+                            <td>(new)</td>
+                            <td><input name="code_new" type="text"/></td>
+                            <td><input name="name_new" type="text"/></td>
+                        </tr>
+                </table>
+                <p><?php submit_button(); ?></p>
+            </form>
+        </div>
+
+        <?php
     }
 }
