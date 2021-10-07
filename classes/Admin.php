@@ -21,9 +21,15 @@ class Admin
         if (current_user_can('manage_options')) {
             $uploaddir = get_temp_dir();
 
-            if (isset($_POST['ids'])) {
+            if (isset($_POST['ids'])) { //Import selected cards
                 $filename = $_POST['version'] . '_' . $_POST['expansion'] . '.cdb';
+                ?>
 
+                <h1>BYE Card Upload Phase 3/3</h1>
+                <p>The following actions were performed:</p>
+                <ul>
+
+                <?php
                 $cdb = new SQLite3($uploaddir . $filename);
                 foreach ($_POST['ids'] as $id) {
                     $q = $cdb->prepare('SELECT d.*, t.name, t.desc FROM datas d JOIN texts t ON d.id == t.id WHERE d.id=:id');
@@ -47,16 +53,19 @@ class Admin
                     ));
 
                     if ($card_insert_res) {
-                        echo("<div>Card {$id} ({$card['name']}) inserted into database.</div>");
+                        echo("<li>Card {$id} ({$card['name']}) inserted into database.</li>");
                     } else{
-                        echo("<div>Could not insert card {$id} ({$card['name']}).</div>");
+                        echo("<li>Could not insert card {$id} ({$card['name']}).</li>");
                     }
                 }
+                ?>
 
+                </ul>
 
+                <?php
                 unlink($uploaddir . $filename);
             }
-            elseif (isset($_FILES['cdb'])) {
+            elseif (isset($_FILES['cdb'])) { //Select cards to import
                 $filename = $_POST['version'] . '_' . $_POST['expansion'] . '.cdb';
 
                 if (move_uploaded_file($_FILES['cdb']['tmp_name'], $uploaddir . $filename)) {
@@ -65,6 +74,8 @@ class Admin
                         $cards = $cdb->query('SELECT id, name FROM texts;');
                         ?>
 
+                        <h1>BYE Card Upload Phase 2/3</h1>
+                        <p>Please select the cards you want to upload from <?= $_POST['expansion'] ?> version <?= $_POST['version'] ?></p>
                         <form method="POST">
                             <input type="hidden" name="version" value="<?= $_POST['version'] ?>"/>
                             <input type="hidden" name="expansion" value="<?= $_POST['expansion'] ?>"/>
@@ -74,7 +85,7 @@ class Admin
                             <div><input name="ids[]" value="<?= $card['id'] ?>" type="checkbox"/><span><?= $card['name'] ?></span></div>
                             <?php
                         }
-                        submit_button();
+                        submit_button('Import');
                         ?>
                         </form>
                         <?php
@@ -87,38 +98,29 @@ class Admin
                     echo("Could not accept uploaded file.");
                 }
             }
-            elseif (isset($_POST['code'])) {
-                $expansion_id = $this->database->find_expansion($_POST['expansion'])->id;
-                if (is_null($expansion_id)) {
-                   $expansion_id = $this->database->create_expansion($_POST['expansion'], $_POST['expansion']);
-                }
-
-                $card_data = $_POST;
-                unset($card_data['image']);
-                unset($card_data['expansion']);
-                unset($card_data['submit']);
-                $card_data['expansion_id'] = $expansion_id;
-
-
-                $card_insert_res = $this->database->create_card($card_data);
-
-                echo "<p> Card {$card_insert_res} inserted </p>";
-            }
-            else { ?>
-                <form enctype="multipart/form-data" method="POST">
-                    <div>
-                        <label for="t_version" style="display:inline-block;width:16ch">Version</label>
-                        <input id="t_version" name="version" type="text" required/>
-                        <label for="t_expansion" style="display:inline-block;width:16ch">Expansion Code</label>
-                        <input id="t_expansion" name="expansion" type="text" required/>
-                    </div>
-                    <div>
+            else { //Input CDB + metadata
+                ?>
+                <div class="wrap">
+                    <h1>BYE Card Upload Phase 1/3</h1>
+                    <form enctype="multipart/form-data" method="POST">
+                        <table class="form-table" role="presentation">
+                            <tr>
+                                <th scope="row"><label for="t_version" style="display:inline-block;width:16ch">Version</label></th>
+                                <td><input id="t_version" name="version" type="text" required/></td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="t_expansion" style="display:inline-block;width:16ch">Expansion Code</label></th>
+                                <td><input id="t_expansion" name="expansion" type="text" required/></td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="u_cdb" style="display:inline-block;width:16ch">CDB File</label></th>
+                                <td><input id="u_cdb" name="cdb" type="file" required></td>
+                            </tr>
+                        </table>
                         <input type="hidden" name="MAX_FILE_SIZE" value="10000000"/>
-                        <label for="u_cdb" style="display:inline-block;width:16ch">CDB File</label>
-                        <input id="u_cdb" name="cdb" type="file" required>
-                    </div>
-                    <?php submit_button() ?>
-                </form>
+                        <p><?php submit_button('Select Cards') ?></p>
+                    </form>
+                </div>
                 <?php
             }
         }
