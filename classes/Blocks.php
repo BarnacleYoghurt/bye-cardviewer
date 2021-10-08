@@ -40,7 +40,12 @@ class Blocks
 
     function bye_cardviewer_card_render($block_attributes, $content)
     {
-        $image_url = get_site_url() . '/wp-content/uploads/cards/' . $block_attributes['expansion'] . '/' . $block_attributes['version'] . '/' . $block_attributes['cardId'] . '.png';
+        $image_url = '/cards/' . $block_attributes['expansion'] . '/' . $block_attributes['version'] . '/' . $block_attributes['cardId'] . '.png';
+        if (!file_exists(wp_upload_dir()['basedir'] . $image_url)) {
+            $image_url = substr($image_url, 0,strlen($image_url) - 4) . '.jpg';
+        }
+        $image_url = wp_upload_dir()['baseurl'] . $image_url;
+
         try {
             $carddata = $this->database->find_card($block_attributes['cardId'], $block_attributes['version']);
 

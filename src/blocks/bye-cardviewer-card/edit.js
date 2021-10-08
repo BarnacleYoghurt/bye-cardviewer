@@ -10,6 +10,13 @@ const blockStyle = {
 export const edit = function ({attributes, setAttributes}) {
     const blockProps = useBlockProps({style: blockStyle});
 
+    let imgUrl = _siteUrl + '/wp-content/uploads/cards/' + attributes.expansion + '/' + attributes.version + '/' + attributes.cardId + '.png';
+    let testImage = new Image();
+    testImage.src = imgUrl;
+    if (testImage.width === 0) {
+        imgUrl = imgUrl.substring(0, imgUrl.length - 4) + '.jpg';
+    }
+
     return <div {...blockProps}>
         <input {...{
             placeholder: 'Expansion', value: attributes.expansion, onChange: function () {
@@ -26,7 +33,7 @@ export const edit = function ({attributes, setAttributes}) {
                 setAttributes({version: event.target.value})
             }
         }}/>
-        <img {...{src: _siteUrl + '/wp-content/uploads/cards/' + attributes.expansion + '/' + attributes.version + '/' + attributes.cardId + '.png'}}
+        <img {...{src: imgUrl}}
              alt="Preview Image"/>
     </div>
 }
