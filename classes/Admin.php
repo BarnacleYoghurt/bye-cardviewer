@@ -41,23 +41,22 @@ class Admin
 
                         $expansion_id = $_POST['expansion'];
 
-                        $card_insert_res = $this->database->create_card(array(
-                            'code' => $id,
-                            'version' => $_POST['version'],
-                            'expansion_id' => $expansion_id,
-                            'type' => $card['type'],
-                            'attribute' => $card['attribute'],
-                            'race' => $card['race'],
-                            'level' => $card['level'],
-                            'atk' => $card['atk'],
-                            'def' => $card['def'],
-                            'name' => $card['name'],
-                            'description' => $card['desc']
-                        ));
-
-                        if ($card_insert_res) {
+                        try {
+                            $this->database->create_card(array(
+                                'code' => $id,
+                                'version' => $_POST['version'],
+                                'expansion_id' => $expansion_id,
+                                'type' => $card['type'],
+                                'attribute' => $card['attribute'],
+                                'race' => $card['race'],
+                                'level' => $card['level'],
+                                'atk' => $card['atk'],
+                                'def' => $card['def'],
+                                'name' => $card['name'],
+                                'description' => $card['desc']
+                            ));
                             echo("<li>Card {$id} ({$card['name']}) inserted into database.</li>");
-                        } else {
+                        } catch (DBException $e) {
                             echo("<li>Could not insert card {$id} ({$card['name']}).</li>");
                         }
                     }
@@ -111,7 +110,8 @@ class Admin
                                 <td><input id="t_version" name="version" type="text" required/></td>
                             </tr>
                             <tr>
-                                <th scope="row"><label for="t_expansion" style="display:inline-block;width:16ch">Expansion</label></th>
+                                <th scope="row"><label for="t_expansion" style="display:inline-block;width:16ch">Expansion</label>
+                                </th>
                                 <td>
                                     <select id="c_expansion" name="expansion" type="text" required>
                                         <?php
@@ -142,7 +142,6 @@ class Admin
 
     function admin_page_expansions()
     {
-        print_r($_POST);
         foreach ($_POST as $k => $v) {
             if (strlen($k) >= 5 && strlen($v) > 0) {
                 switch (substr($k, 0, 5)) {
@@ -156,10 +155,14 @@ class Admin
             }
         }
 
-        if (isset($_POST['code_new']) && strlen($_POST['code_new'] > 0)) {
+        if (isset($_POST['code_new']) && strlen($_POST['code_new']) > 0) {
             $code = $_POST['code_new'];
-            $name = isset($_POST['name_new']) && strlen($_POST['name_new'] > 0) ? $_POST['name_new'] : $code;
-            $this->database->create_expansion($code, $name);
+            $name = isset($_POST['name_new']) && strlen($_POST['name_new']) > 0 ? $_POST['name_new'] : $code;
+            try {
+                $this->database->create_expansion($code, $name);
+            } catch (DBException $e) {
+                echo("<p>Could not create expansion - {$e->getMessage()}</p>");
+            }
         }
 
 

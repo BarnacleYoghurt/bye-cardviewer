@@ -2,7 +2,9 @@
 
 namespace bye_plugin;
 
-include_once ("CardInfo.php");
+use Exception;
+
+include_once("CardInfo.php");
 
 class Database
 {
@@ -16,18 +18,21 @@ class Database
         global $wpdb;
         return $wpdb->prefix . self::TN_EXPANSIONS;
     }
+
     function table_cards()
     {
         global $wpdb;
         return $wpdb->prefix . self::TN_CARDS;
     }
+
     function table_cardtexts()
     {
         global $wpdb;
         return $wpdb->prefix . self::TN_CARDTEXTS;
     }
 
-    function setup_tables() {
+    function setup_tables()
+    {
         global $wpdb;
         $installed_db_version = get_option('bye_cardviewer_db_version');
 
@@ -63,10 +68,10 @@ class Database
                     PRIMARY KEY (id)
                 )";
 
-            require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-            dbDelta( $sql_expansions );
-            dbDelta( $sql_cards );
-            dbDelta( $sql_cardtexts );
+            require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+            dbDelta($sql_expansions);
+            dbDelta($sql_cards);
+            dbDelta($sql_cardtexts);
             $wpdb->query("ALTER TABLE {$this->table_cards()} ADD CONSTRAINT `u_cards_code_version` UNIQUE (code, version)");
             $wpdb->query("ALTER TABLE {$this->table_cardtexts()} ADD CONSTRAINT `u_cardtexts_cardid_lang` UNIQUE (card_id, lang)");
             $wpdb->query(
@@ -84,7 +89,8 @@ class Database
         add_option('bye_cardviewer_db_version', self::DB_VERSION);
     }
 
-    function find_card($code, $version, $lang = 'en') : CardInfo {
+    function find_card($code, $version, $lang = 'en'): CardInfo
+    {
         global $wpdb;
         $raw_data = $wpdb->get_row($wpdb->prepare("SELECT c.*, t.*, e.id as expansion_id FROM {$this->table_cards()} c 
                                 JOIN {$this->table_expansions()} e ON c.expansion_id = e.id 
@@ -92,53 +98,29 @@ class Database
 								WHERE c.code=%d
 								AND c.version=%s
 								AND t.lang=%s", $code, $version, $lang));
-        return new CardInfo(
-            $raw_data->code,
-            $raw_data->version,
-            $raw_data->expansion_id,
-            $raw_data->type,
-            $raw_data->attribute,
-            $raw_data->race,
-            $raw_data->level,
-            $raw_data->atk,
-            $raw_data->def,
-            $raw_data->lang,
-            $raw_data->name,
-            $raw_data->description
-        );
-    }
 
-    function all_expansions() {
-        global $wpdb;
-        return $wpdb->get_results("SELECT * FROM {$this->table_expansions()}");
-    }
-
-    function find_expansion($code) {
-        global $wpdb;
-        return $wpdb->get_row($wpdb->prepare("SELECT id FROM {$this->table_expansions()} WHERE code = %s;",$code));
-    }
-
-    function create_expansion($code, $name) {
-        global $wpdb;
-        if ($wpdb->insert($this->table_expansions(), array('code' => $code, 'name' => $name))) {
-            return $wpdb->insert_id;
-        }
-        else {
-            return false;
+        if (is_null($raw_data)) {
+            throw new DBException('Card not found!');
+        } else {
+            return new CardInfo(
+                $raw_data->code,
+                $raw_data->version,
+                $raw_data->expansion_id,
+                $raw_data->type,
+                $raw_data->attribute,
+                $raw_data->race,
+                $raw_data->level,
+                $raw_data->atk,
+                $raw_data->def,
+                $raw_data->lang,
+                $raw_data->name,
+                $raw_data->description
+            );
         }
     }
 
-    function update_expansion_code($id, $code) {
-        global $wpdb;
-        $wpdb->update($this->table_expansions(), array('code' => $code), array('id' => $id));
-    }
-
-    function update_expansion_name($id, $name) {
-        global $wpdb;
-        $wpdb->update($this->table_expansions(), array('name' => $name), array('id' => $id));
-    }
-
-    function create_card($data) {
+    function create_card($data): int
+    {
         global $wpdb;
         $card_data = $data;
         unset($card_data['name']);
@@ -157,15 +139,47 @@ class Database
             if ($wpdb->insert($this->table_cardtexts(), $text_data)) {
                 $wpdb->query('COMMIT');
                 return $card_id;
-            }
-            else {
+            } else {
                 $wpdb->query('ROLLBACK');
-                return false;
+                throw new DBException('Could not save card text data - transaction rolled back!');
             }
-        }
-        else {
+        } else {
             $wpdb->query('ROLLBACK');
-            return false;
+            throw new DBException('Could not save card base data - transaction rolled back!');
         }
+    }
+
+    function all_expansions()
+    {
+        global $wpdb;
+        return $wpdb->get_results("SELECT * FROM {$this->table_expansions()}");
+    }
+
+    function find_expansion($code)
+    {
+        global $wpdb;
+        return $wpdb->get_row($wpdb->prepare("SELECT id FROM {$this->table_expansions()} WHERE code = %s;", $code));
+    }
+
+    function create_expansion($code, $name): int
+    {
+        global $wpdb;
+        if ($wpdb->insert($this->table_expansions(), array('code' => $code, 'name' => $name))) {
+            return $wpdb->insert_id;
+        } else {
+            throw new DBException("Could not create expansion!");
+        }
+    }
+
+    function update_expansion_code($id, $code)
+    {
+        global $wpdb;
+        $wpdb->update($this->table_expansions(), array('code' => $code), array('id' => $id));
+    }
+
+    function update_expansion_name($id, $name)
+    {
+        global $wpdb;
+        $wpdb->update($this->table_expansions(), array('name' => $name), array('id' => $id));
     }
 }

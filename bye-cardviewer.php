@@ -3,6 +3,7 @@
 Plugin Name: BYE Card Viewer
 */
 
+include_once ("classes/DBException.php");
 include_once ("classes/Admin.php");
 include_once ("classes/Blocks.php");
 include_once ("classes/Database.php");

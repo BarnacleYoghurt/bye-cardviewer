@@ -2,6 +2,8 @@
 
 namespace bye_plugin;
 
+use Exception;
+
 class Blocks
 {
     private Database $database;
@@ -11,20 +13,22 @@ class Blocks
         $this->database = $database;
     }
 
-    function register_categories( $block_categories ) {
+    function register_categories($block_categories)
+    {
         return array_merge(
             $block_categories,
             [
                 [
-                    'slug'  => 'bye-blocks',
-                    'title' => esc_html__( 'BYE', 'text-domain' )
+                    'slug' => 'bye-blocks',
+                    'title' => esc_html__('BYE', 'text-domain')
                 ],
             ]
         );
     }
 
-    function register_blocks() {
-        register_block_type(__DIR__ . '/../block-meta/bye-cardviewer-card', array('render_callback' => array($this,'bye_cardviewer_card_render')));
+    function register_blocks()
+    {
+        register_block_type(__DIR__ . '/../block-meta/bye-cardviewer-card', array('render_callback' => array($this, 'bye_cardviewer_card_render')));
         //register_block_type(__DIR__ . '/../block-meta/bye-cardviewer-helloworld', array());
 
         wp_add_inline_script( //still doesn't work for some reason
@@ -34,25 +38,34 @@ class Blocks
         );
     }
 
-    function bye_cardviewer_card_render($block_attributes, $content) {
+    function bye_cardviewer_card_render($block_attributes, $content)
+    {
         $image_url = get_site_url() . '/wp-content/uploads/cards/' . $block_attributes['expansion'] . '/' . $block_attributes['version'] . '/' . $block_attributes['cardId'] . '.png';
-        $carddata = $this->database->find_card($block_attributes['cardId'],$block_attributes['version']);
+        try {
+            $carddata = $this->database->find_card($block_attributes['cardId'], $block_attributes['version']);
 
-        $el_img = sprintf('<a class="bye-card-image" href="%s"><img src="%s"/></a>',$image_url,$image_url);
-        $el_cardname = sprintf('<h3 class="bye-card-cardname">%s</h3>',$carddata->getName());
-        $el_cardtype = sprintf('<span class="bye-card-cardtype">%s</span>',$carddata->getTypeName());
-        $el_cardstats = sprintf('<span class="bye-card-cardstats">%s</span>', $this->format_cardstats($carddata));
-        $el_cardtext = sprintf('<p class="bye-card-cardtext"><span>%s</span></p>',$this->format_cardtext($carddata->getDescription()));
+            $el_img = sprintf('<a class="bye-card-image" href="%s"><img src="%s"/></a>', $image_url, $image_url);
+            $el_cardname = sprintf('<h3 class="bye-card-cardname">%s</h3>', $carddata->getName());
+            $el_cardtype = sprintf('<span class="bye-card-cardtype">%s</span>', $carddata->getTypeName());
+            $el_cardstats = sprintf('<span class="bye-card-cardstats">%s</span>', $this->format_cardstats($carddata));
+            $el_cardtext = sprintf('<p class="bye-card-cardtext"><span>%s</span></p>', $this->format_cardtext($carddata->getDescription()));
 
-        return sprintf('<div class="%s">%s%s%s%s%s</div>',$block_attributes['className'],$el_img,$el_cardname,$el_cardtype,$el_cardstats, $el_cardtext);
+            return sprintf('<div class="%s">%s%s%s%s%s</div>', $block_attributes['className'], $el_img, $el_cardname, $el_cardtype, $el_cardstats, $el_cardtext);
+        } catch (DBException $e) {
+            return sprintf('<div class="bye-card-error">
+                                        <h3>Cardviewer Error!</h3>
+                                        <p>Could not display card %s from %s v%s</p>
+                                        <p>Error mesage: %s</p>
+                                    </div>', $block_attributes['cardId'], $block_attributes['expansion'], $block_attributes['version'], $e->getMessage());
+        }
     }
 
-    function format_cardstats($carddata) {
+    function format_cardstats($carddata)
+    {
         if ($carddata->isMonster()) {
             if ($carddata->isXyz()) {
                 $stats = sprintf('Rank %d', $carddata->getLevel());
-            }
-            elseif ($carddata->isLink()) {
+            } elseif ($carddata->isLink()) {
                 $arrows = '';
                 if ($carddata->isLinkArrow(CardInfo::LINK_MARKER_LEFT)) {
                     $arrows .= '&#9664;'; //◀
@@ -80,8 +93,7 @@ class Blocks
                 }
 
                 $stats = sprintf('Link-%d [%s]', $carddata->getLevel(), $arrows);
-            }
-            else {
+            } else {
                 $stats = sprintf('Level %d', $carddata->getLevel());
             }
 
@@ -95,15 +107,15 @@ class Blocks
             }
 
             return $stats;
-        }
-        else {
+        } else {
             return '';
         }
     }
 
-    function format_cardtext($text) {
+    function format_cardtext($text)
+    {
         return str_replace('\\"', '"',
             str_replace('\\\'', '\'',
-                str_replace("\n","<br/>",$text)));
+                str_replace("\n", "<br/>", $text)));
     }
 }
