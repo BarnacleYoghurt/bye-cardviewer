@@ -159,6 +159,11 @@ class Database
         return $wpdb->get_results("SELECT * FROM {$this->table_expansions()}");
     }
 
+    function get_expansion($id) {
+        global $wpdb;
+        return $wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table_expansions()} WHERE id = %d;", $id));
+    }
+
     function find_expansion($code)
     {
         global $wpdb;
