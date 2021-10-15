@@ -41,7 +41,7 @@ class DatabaseTest extends WP_UnitTestCase
         $wpdb->insert($this->classInstance->table_cards(), array(
             'code' => 1,
             'expansion_id' => $this->test_exp_id,
-            'version' => '0.0.1',
+            'version' => '000001',
             'type' => CardInfo::TYPE_MONSTER
         ));
         $wpdb->insert($this->classInstance->table_cardtexts(), array(
@@ -51,7 +51,7 @@ class DatabaseTest extends WP_UnitTestCase
         $wpdb->insert($this->classInstance->table_cards(), array(
             'code' => 1,
             'expansion_id' => $this->test_exp_id,
-            'version' => '0.0.2',
+            'version' => '000002',
             'type' => CardInfo::TYPE_MONSTER
         ));
         $wpdb->insert($this->classInstance->table_cardtexts(), array(
@@ -61,7 +61,7 @@ class DatabaseTest extends WP_UnitTestCase
         $wpdb->insert($this->classInstance->table_cards(), array(
             'code' => 2,
             'expansion_id' => $tost_exp_id,
-            'version' => '0.0.1',
+            'version' => '000001',
             'type' => CardInfo::TYPE_SPELL
         ));
         $tsp_id = $wpdb->insert_id;
@@ -102,6 +102,13 @@ class DatabaseTest extends WP_UnitTestCase
         $this->assertEquals('Test Monster', $card->getName());
     }
 
+    public function testFindCardWithCodeAndHigherVersionReturnsCorrectCard()
+    {
+        $card = $this->classInstance->find_card(1, '1.0.0');
+
+        $this->assertEquals('Test Monster v2', $card->getName());
+    }
+
     public function testFindCardWithCodeExactVersionAndLanguageReturnsCorrectCard()
     {
         $card = $this->classInstance->find_card(2, '0.0.1', 'de');
@@ -118,7 +125,6 @@ class DatabaseTest extends WP_UnitTestCase
 
     public function testCreateExpansionReturnsIdOnSuccess()
     {
-
         $expansion_id = $this->classInstance->create_expansion('tast', 'Tasty Expansion');
 
         global $wpdb;
@@ -185,6 +191,19 @@ class DatabaseTest extends WP_UnitTestCase
 
         $this->assertNull($card);
         $this->assertNull($cardtext);
+    }
+
+    public function testGetExpansionReturnsCorrectRow()
+    {
+        $expansion = $this->classInstance->get_expansion($this->test_exp_id);
+
+        $this->assertEquals('test', $expansion->code);
+    }
+
+    public function testGetExpansionThrowsExceptionOnFailure()
+    {
+        $this->expectException(DBException::class);
+        $this->classInstance->get_expansion(0);
     }
 
     public function testFindExpansionReturnsCorrectRow()

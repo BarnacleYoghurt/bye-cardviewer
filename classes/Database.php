@@ -89,22 +89,25 @@ class Database
         add_option('bye_cardviewer_db_version', self::DB_VERSION);
     }
 
-    function find_card($code, $version, $lang = 'en'): CardInfo
+    function find_card($code, $max_version, $lang = 'en'): CardInfo
     {
         global $wpdb;
+        $canonical_version = $this->canonicalize_version_string($max_version);
+
         $raw_data = $wpdb->get_row($wpdb->prepare("SELECT c.*, t.*, e.id as expansion_id FROM {$this->table_cards()} c 
                                 JOIN {$this->table_expansions()} e ON c.expansion_id = e.id 
                                 JOIN {$this->table_cardtexts()} t ON c.id = t.card_id 
 								WHERE c.code=%d
-								AND c.version=%s
-								AND t.lang=%s", $code, $version, $lang));
+								AND STRCMP(c.version, %s)<=0
+								AND t.lang=%s
+								ORDER BY c.version DESC LIMIT 1", $code, $canonical_version, $lang));
 
         if (is_null($raw_data)) {
             throw new DBException('Card not found!');
         } else {
             return new CardInfo(
                 $raw_data->code,
-                $raw_data->version,
+                $this->decanonicalize_version_string($raw_data->version),
                 $raw_data->expansion_id,
                 $raw_data->type,
                 $raw_data->attribute,
@@ -126,6 +129,7 @@ class Database
         unset($card_data['name']);
         unset($card_data['description']);
         unset($card_data['lang']);
+        $card_data['version'] = $this->canonicalize_version_string($card_data['version']);
 
         $wpdb->query('START TRANSACTION');
         $text_data = array('name' => $data['name'], 'description' => $data['description']);
@@ -153,6 +157,18 @@ class Database
     {
         global $wpdb;
         return $wpdb->get_results("SELECT * FROM {$this->table_expansions()}");
+    }
+
+    function get_expansion($id) {
+        global $wpdb;
+
+        $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table_expansions()} WHERE id = %d;", $id));
+
+        if (is_null($row)) {
+            throw new DBException('Expansion not found!');
+        } else {
+            return $row;
+        }
     }
 
     function find_expansion($code)
@@ -187,5 +203,24 @@ class Database
     {
         global $wpdb;
         $wpdb->update($this->table_expansions(), array('name' => $name), array('id' => $id));
+    }
+
+    private function canonicalize_version_string(string $version): string
+    {
+        $canonical_version = '';
+        $parts = explode('.', $version);
+        foreach ($parts as $part) {
+            $canonical_version .= is_numeric($part) ? sprintf('%02d', $part) : '00';
+        }
+        return $canonical_version;
+    }
+
+    private function decanonicalize_version_string(string $canonical_version): string {
+        $version = '';
+        for ($i = 0; $i<strlen($canonical_version)-1; $i += 2) {
+            $version .= strlen($version) > 0 ? '.' : '';
+            $version .= sprintf('%d', substr($canonical_version, $i, 2));
+        }
+        return $version;
     }
 }
