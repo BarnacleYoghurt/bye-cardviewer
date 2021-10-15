@@ -167,7 +167,13 @@ class Database
     function find_expansion($code)
     {
         global $wpdb;
-        return $wpdb->get_row($wpdb->prepare("SELECT id FROM {$this->table_expansions()} WHERE code = %s;", $code));
+        $row = $wpdb->get_row($wpdb->prepare("SELECT id FROM {$this->table_expansions()} WHERE code = %s;", $code));
+
+        if (is_null($row)) {
+            throw new DBException('Expansion not found!');
+        } else {
+            return $row;
+        }
     }
 
     function create_expansion($code, $name): int
