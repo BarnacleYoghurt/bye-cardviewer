@@ -193,4 +193,10 @@ class DatabaseTest extends WP_UnitTestCase
 
         $this->assertEquals($this->test_exp_id, $expansion->id);
     }
+
+    public function testFindExpansionThrowsExceptionOnFailure()
+    {
+        $this->expectException(DBException::class);
+        $this->classInstance->find_expansion('vwxy');
+    }
 }
