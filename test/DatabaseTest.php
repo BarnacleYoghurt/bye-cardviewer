@@ -193,6 +193,19 @@ class DatabaseTest extends WP_UnitTestCase
         $this->assertNull($cardtext);
     }
 
+    public function testGetExpansionReturnsCorrectRow()
+    {
+        $expansion = $this->classInstance->get_expansion($this->test_exp_id);
+
+        $this->assertEquals('test', $expansion->code);
+    }
+
+    public function testGetExpansionThrowsExceptionOnFailure()
+    {
+        $this->expectException(DBException::class);
+        $this->classInstance->get_expansion(0);
+    }
+
     public function testFindExpansionReturnsCorrectRow()
     {
         $expansion = $this->classInstance->find_expansion('test');
