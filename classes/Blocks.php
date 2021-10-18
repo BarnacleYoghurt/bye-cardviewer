@@ -57,7 +57,7 @@ class Blocks
             $el_cardtext = sprintf('<p class="bye-card-cardtext"><span>%s</span></p>', $this->format_cardtext($carddata->getDescription()));
             $el_metadata = sprintf('<span class="bye-card-meta">%s (v%s)</span>', $expansion_name, $carddata->getVersion());
 
-            return sprintf('<div class="%s">%s%s%s%s%s%s</div>', get_block_wrapper_attributes(),
+            return sprintf('<div %s>%s%s%s%s%s%s</div>', get_block_wrapper_attributes(),
                 $el_img, $el_cardname, $el_cardtype, $el_cardstats, $el_cardtext, $el_metadata);
         } catch (DBException $e) {
             return sprintf('<div class="bye-card-error">
