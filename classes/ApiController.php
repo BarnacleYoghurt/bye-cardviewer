@@ -25,10 +25,25 @@ class ApiController extends WP_REST_Controller
             'permission_callback' => '__return_true',
             'args' => array(),
         ));
+        register_rest_route($namespace, '/cards(?:/(?P<expansion_code>[a-zA-Z0-9]+))?', array(
+            'methods' => WP_REST_Server::READABLE,
+            'callback' => array($this, 'get_cards'),
+            'permission_callback' => '__return_true',
+            'args' => array(),
+        ));
     }
 
     function get_expansions($data)
     {
         return new WP_REST_Response($this->database->all_expansions(), 200);
+    }
+
+    function get_cards($data){
+        $expansion_code = $data['expansion_code'];
+        if (isset($expansion_code) && strlen($expansion_code) > 0) {
+            return new WP_REST_Response($this->database->all_cards_in_expansion($expansion_code), 200);
+        } else {
+            return new WP_REST_Response($this->database->all_cards(), 200);
+        }
     }
 }

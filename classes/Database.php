@@ -89,6 +89,23 @@ class Database
         add_option('bye_cardviewer_db_version', self::DB_VERSION);
     }
 
+    public function all_cards()
+    {
+        global $wpdb;
+        return $wpdb->get_results("SELECT c.*, t.*, e.id as expansion_id FROM {$this->table_cards()} c 
+                                    JOIN {$this->table_expansions()} e ON c.expansion_id = e.id 
+                                    JOIN {$this->table_cardtexts()} t ON c.id = t.card_id ");
+    }
+
+    public function all_cards_in_expansion($expansion_code)
+    {
+        global $wpdb;
+        return $wpdb->get_results($wpdb->prepare("SELECT c.*, t.*, e.id as expansion_id FROM {$this->table_cards()} c 
+                                                    JOIN {$this->table_expansions()} e ON c.expansion_id = e.id 
+                                                    JOIN {$this->table_cardtexts()} t ON c.id = t.card_id 
+                                                    WHERE e.code=%s", $expansion_code));
+    }
+
     function find_card($code, $max_version, $lang = 'en'): CardInfo
     {
         global $wpdb;
@@ -159,7 +176,8 @@ class Database
         return $wpdb->get_results("SELECT * FROM {$this->table_expansions()}");
     }
 
-    function get_expansion($id) {
+    function get_expansion($id)
+    {
         global $wpdb;
 
         $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$this->table_expansions()} WHERE id = %d;", $id));
@@ -215,9 +233,10 @@ class Database
         return $canonical_version;
     }
 
-    private function decanonicalize_version_string(string $canonical_version): string {
+    private function decanonicalize_version_string(string $canonical_version): string
+    {
         $version = '';
-        for ($i = 0; $i<strlen($canonical_version)-1; $i += 2) {
+        for ($i = 0; $i < strlen($canonical_version) - 1; $i += 2) {
             $version .= strlen($version) > 0 ? '.' : '';
             $version .= sprintf('%d', substr($canonical_version, $i, 2));
         }

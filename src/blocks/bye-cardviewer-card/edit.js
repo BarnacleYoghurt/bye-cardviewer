@@ -19,30 +19,43 @@ export const edit = function ({attributes, setAttributes}) {
     }
 
     const [expansions, setExpansions] = useState([]);
+    const [cards, setCards] = useState([]);
 
     useEffect(() => {
         wp.apiFetch({path: 'bye/v1/expansions'}).then(data => {
             setExpansions(data);
         });
+        if (attributes.expansion) {
+            wp.apiFetch({path: 'bye/v1/cards/' + attributes.expansion}).then(data => {
+                setCards(data);
+            })
+        }
     }, []);
 
     return <div {...blockProps}>
         <select {...{
-            placeholder: 'Expansion', value: attributes.expansion, onChange: function () {
+            placeholder: 'Expansion', value: attributes.expansion, onChange: function (event) {
                 setAttributes({expansion: event.target.value})
+                wp.apiFetch({path: 'bye/v1/cards/' + event.target.value}).then(data => {
+                    setCards(data);
+                })
             }
         }}>
-            {expansions.map((expansion,index) => {
+            {expansions.map((expansion) => {
                 return <option {...{value: expansion.code}}>{expansion.name}</option>
             })}
         </select>
-        <input {...{
-            placeholder: 'CardID', value: attributes.cardId, onChange: function () {
+        <select {...{
+            placeholder: 'CardID', value: attributes.cardId, onChange: function (event) {
                 setAttributes({cardId: event.target.value})
             }
-        }}/>
+        }}>
+            {cards.map((card) => {
+                return <option {...{value: card.code}}>{card.name}</option>
+            })}
+        </select>
         <input {...{
-            placeholder: 'Version', value: attributes.version, onChange: function () {
+            placeholder: 'Max. version', value: attributes.version, onChange: function (event) {
                 setAttributes({version: event.target.value})
             }
         }}/>

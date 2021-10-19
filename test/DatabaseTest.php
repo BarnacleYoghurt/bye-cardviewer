@@ -95,6 +95,24 @@ class DatabaseTest extends WP_UnitTestCase
         $this->assertEquals(2, count($expansions));
     }
 
+    public function testAllCardsContainsCorrectNumberOfCards(){
+        $cards = $this->classInstance->all_cards();
+
+        $this->assertEquals(3, count($cards));
+    }
+
+    public function testAllCardsInExpansionContainsCorrectNumberOfCards(){
+        $cards = $this->classInstance->all_cards_in_expansion('test');
+
+        $this->assertEquals(2, count($cards));
+    }
+
+    public function testAllCardsInExpansionIsEmptyForNonExistingExpansion(){
+        $cards = $this->classInstance->all_cards_in_expansion('vwxy');
+
+        $this->assertEquals(0, count($cards));
+    }
+
     public function testFindCardWithCodeAndExactVersionReturnsCorrectCard()
     {
         $card = $this->classInstance->find_card(1, '0.0.1');
