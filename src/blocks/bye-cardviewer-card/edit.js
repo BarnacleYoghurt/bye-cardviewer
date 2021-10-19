@@ -1,4 +1,5 @@
-import { useBlockProps } from '@wordpress/block-editor';
+import {useBlockProps} from '@wordpress/block-editor';
+import {useState, useEffect} from '@wordpress/element';
 
 const _siteUrl = 'https://bye-project.xyz'; //better replace this with a get_site_url passed in from PHP
 const blockStyle = {
@@ -17,12 +18,24 @@ export const edit = function ({attributes, setAttributes}) {
         imgUrl = imgUrl.substring(0, imgUrl.length - 4) + '.jpg';
     }
 
+    const [expansions, setExpansions] = useState([]);
+
+    useEffect(() => {
+        wp.apiFetch({path: 'bye/v1/expansions'}).then(data => {
+            setExpansions(data);
+        });
+    }, []);
+
     return <div {...blockProps}>
-        <input {...{
+        <select {...{
             placeholder: 'Expansion', value: attributes.expansion, onChange: function () {
                 setAttributes({expansion: event.target.value})
             }
-        }}/>
+        }}>
+            {expansions.map((expansion,index) => {
+                return <option {...{value: expansion.code}}>{expansion.name}</option>
+            })}
+        </select>
         <input {...{
             placeholder: 'CardID', value: attributes.cardId, onChange: function () {
                 setAttributes({cardId: event.target.value})
@@ -36,4 +49,4 @@ export const edit = function ({attributes, setAttributes}) {
         <img {...{src: imgUrl}}
              alt="Preview Image"/>
     </div>
-}
+};
