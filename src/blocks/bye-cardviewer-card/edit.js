@@ -91,6 +91,10 @@ export const edit = function ({attributes, setAttributes}) {
                         }
                     }}/>
                 </fieldset>
+                <button onClick={() => {
+                    updateExpansionsList();
+                    updateCardsList();
+                }}>Reload</button>
             </PanelBody>
         </InspectorControls>
         <img className="bye-card-image" src={imgUrl}
