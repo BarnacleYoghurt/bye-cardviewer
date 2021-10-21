@@ -7,15 +7,11 @@ const _siteUrl = 'https://bye-project.xyz'; //better replace this with a get_sit
 export const edit = function ({attributes, setAttributes}) {
     const blockProps = useBlockProps({style: {backgroundColor: '#000'}});
 
-    let imgUrl = _siteUrl + '/wp-content/uploads/cards/' + attributes.expansion + '/' + attributes.version + '/' + attributes.cardId + '.png';
-    let testImage = new Image();
-    testImage.src = imgUrl;
-    if (testImage.width === 0) {
-        imgUrl = imgUrl.substring(0, imgUrl.length - 4) + '.jpg';
-    }
-
     const [expansions, setExpansions] = useState([]);
     const [cards, setCards] = useState([]);
+    const [imgUrl, setImgUrl] = useState('');
+
+    const selectedCard = cards.find(c => c.code === attributes.cardId);
 
     function updateExpansionsList() {
         wp.apiFetch({path: 'bye/v1/expansions'}).then(data => {
@@ -26,13 +22,15 @@ export const edit = function ({attributes, setAttributes}) {
     }
 
     function updateCardsList() {
-        const versionParam = attributes.version.trim().length > 0
+        const versionParam = (attributes.version && attributes.version.trim().length > 0)
             ? '?max_version=' + attributes.version
             : '';
         wp.apiFetch({path: 'bye/v1/cards/' + attributes.expansion + versionParam})
             .then(data => {
                 setCards(data.sort((a, b) => a.code - b.code));
-            }, error => {console.log([attributes.cardId, error])});
+            }, error => {
+                console.log([attributes.cardId, error])
+            });
     }
 
     useEffect(() => {
@@ -41,6 +39,18 @@ export const edit = function ({attributes, setAttributes}) {
     useEffect(() => {
         updateCardsList();
     }, [attributes.expansion, attributes.version]);
+    useEffect(() => {
+        let _imgUrl = _siteUrl + '/wp-content/uploads/cards/' + attributes.expansion + '/' + selectedCard?.version + '/' + attributes.cardId + '.png';
+        let testImage = new Image();
+        testImage.onload = () => {
+            setImgUrl(_imgUrl);
+        }
+        testImage.onerror = () => {
+            setImgUrl(_imgUrl.substring(0, _imgUrl.length - 4) + '.jpg');
+        }
+        testImage.src = _imgUrl;
+
+    }, [attributes.expansion, attributes.cardId, attributes.version])
 
     return <div {...blockProps}>
         <InspectorControls>
@@ -76,7 +86,7 @@ export const edit = function ({attributes, setAttributes}) {
                 <fieldset>
                     <legend>Max. Version</legend>
                     <input {...{
-                        value: attributes.version, onChange: function(event) {
+                        value: attributes.version, onChange: function (event) {
                             setAttributes({version: event.target.value})
                         }
                     }}/>
@@ -85,8 +95,9 @@ export const edit = function ({attributes, setAttributes}) {
         </InspectorControls>
         <img className="bye-card-image" src={imgUrl}
              alt="Preview Image"/>
-        <h2 className="bye-card-cardname">{cards.find(c => c.code === attributes.cardId)?.name ?? ''}</h2>
-        <p className="bye-card-cardtext"><span>{cards.find(c => c.code === attributes.cardId)?.description ?? ''}</span>
+        <h2 className="bye-card-cardname">{selectedCard?.name ?? ''}</h2>
+        <p className="bye-card-cardtext">
+            <span>{selectedCard?.description ?? ''}</span>
         </p>
     </div>
 };
