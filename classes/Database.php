@@ -89,32 +89,36 @@ class Database
         add_option('bye_cardviewer_db_version', self::DB_VERSION);
     }
 
-    public function all_cards()
+    public function all_cards($max_version = '99.99.99', $lang = 'en')
     {
+        $canonical_version = $this->canonicalize_version_string($max_version);
         global $wpdb;
-        return $wpdb->get_results("SELECT c.*, t.*, e.id as expansion_id FROM {$this->table_cards()} c
+        return $wpdb->get_results($wpdb->prepare("SELECT c.*, t.*, e.id as expansion_id FROM {$this->table_cards()} c
                                     JOIN {$this->table_expansions()} e ON c.expansion_id = e.id 
                                     JOIN {$this->table_cardtexts()} t ON c.id = t.card_id
                                     JOIN 
                                         (SELECT code, MAX(version) AS version 
                                         FROM {$this->table_cards()}
+                                        WHERE STRCMP(version, %s)<=0
                                         GROUP BY code) sq 
                                     ON sq.code = c.code AND sq.version = c.version
-                                    WHERE t.lang = 'en'");
+                                    WHERE t.lang = %s", $canonical_version, $lang));
     }
 
-    public function all_cards_in_expansion($expansion_code)
+    public function all_cards_in_expansion($expansion_code, $max_version = '99.99.99', $lang = 'en')
     {
+        $canonical_version = $this->canonicalize_version_string($max_version);
         global $wpdb;
         return $wpdb->get_results($wpdb->prepare("SELECT c.*, t.*, e.id as expansion_id FROM {$this->table_cards()} c 
                                                     JOIN {$this->table_expansions()} e ON c.expansion_id = e.id 
                                                     JOIN {$this->table_cardtexts()} t ON c.id = t.card_id
                                                     JOIN 
                                                         (SELECT code, MAX(version) AS version 
-                                                        FROM {$this->table_cards()} 
+                                                        FROM {$this->table_cards()}
+                                                        WHERE STRCMP(version, %s)<=0
                                                         GROUP BY code) sq 
                                                     ON sq.code = c.code AND sq.version = c.version
-                                                    WHERE t.lang='en' AND e.code=%s", $expansion_code));
+                                                    WHERE t.lang=%s AND e.code=%s", $canonical_version, $lang, $expansion_code));
     }
 
     function find_card($code, $max_version, $lang = 'en'): CardInfo

@@ -111,6 +111,18 @@ class DatabaseTest extends WP_UnitTestCase
         $this->assertContains('000002', array_column($cards, 'version'));
     }
 
+    public function testAllCardsWithMaxVersionContainsOnlyCardsUpToVersion(){
+        $cards = $this->classInstance->all_cards('0.0.1');
+        $this->assertNotContains('000002', array_column($cards, 'version'));
+    }
+
+    public function testAllCardsWithLanguageContainsOnlyCardsInLanguage(){
+        $cards = $this->classInstance->all_cards('99.99.99', 'de');
+
+        $this->assertContains('Testzauber', array_column($cards, 'name'));
+        $this->assertNotContains('Test Spell', array_column($cards, 'name'));
+    }
+
     public function testAllCardsInExpansionContainsCorrectNumberOfCards(){
         $cards = $this->classInstance->all_cards_in_expansion('test');
 
