@@ -92,9 +92,15 @@ class Database
     public function all_cards()
     {
         global $wpdb;
-        return $wpdb->get_results("SELECT c.*, t.*, e.id as expansion_id FROM {$this->table_cards()} c 
+        return $wpdb->get_results("SELECT c.*, t.*, e.id as expansion_id FROM {$this->table_cards()} c
                                     JOIN {$this->table_expansions()} e ON c.expansion_id = e.id 
-                                    JOIN {$this->table_cardtexts()} t ON c.id = t.card_id ");
+                                    JOIN {$this->table_cardtexts()} t ON c.id = t.card_id
+                                    JOIN 
+                                        (SELECT code, MAX(version) AS version 
+                                        FROM {$this->table_cards()}
+                                        GROUP BY code) sq 
+                                    ON sq.code = c.code AND sq.version = c.version
+                                    WHERE t.lang = 'en'");
     }
 
     public function all_cards_in_expansion($expansion_code)
@@ -102,8 +108,13 @@ class Database
         global $wpdb;
         return $wpdb->get_results($wpdb->prepare("SELECT c.*, t.*, e.id as expansion_id FROM {$this->table_cards()} c 
                                                     JOIN {$this->table_expansions()} e ON c.expansion_id = e.id 
-                                                    JOIN {$this->table_cardtexts()} t ON c.id = t.card_id 
-                                                    WHERE e.code=%s", $expansion_code));
+                                                    JOIN {$this->table_cardtexts()} t ON c.id = t.card_id
+                                                    JOIN 
+                                                        (SELECT code, MAX(version) AS version 
+                                                        FROM {$this->table_cards()} 
+                                                        GROUP BY code) sq 
+                                                    ON sq.code = c.code AND sq.version = c.version
+                                                    WHERE t.lang='en' AND e.code=%s", $expansion_code));
     }
 
     function find_card($code, $max_version, $lang = 'en'): CardInfo

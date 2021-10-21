@@ -98,13 +98,23 @@ class DatabaseTest extends WP_UnitTestCase
     public function testAllCardsContainsCorrectNumberOfCards(){
         $cards = $this->classInstance->all_cards();
 
-        $this->assertEquals(3, count($cards));
+        $this->assertEquals(2, count($cards));
+    }
+
+    public function testAllCardsContainsOnlyLatestVersion() {
+        $cards = $this->classInstance->all_cards();
+        //comes out to exactly ([1] => count($cards)) if code column is unique
+        $code_counts = array_count_values(array_count_values(array_column($cards, 'code')));
+
+        $this->assertEquals(1, count($code_counts));
+        $this->assertEquals(count($cards), $code_counts[1]);
+        $this->assertContains('000002', array_column($cards, 'version'));
     }
 
     public function testAllCardsInExpansionContainsCorrectNumberOfCards(){
         $cards = $this->classInstance->all_cards_in_expansion('test');
 
-        $this->assertEquals(2, count($cards));
+        $this->assertEquals(1, count($cards));
     }
 
     public function testAllCardsInExpansionIsEmptyForNonExistingExpansion(){
