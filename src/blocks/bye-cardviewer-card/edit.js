@@ -17,20 +17,30 @@ export const edit = function ({attributes, setAttributes}) {
     const [expansions, setExpansions] = useState([]);
     const [cards, setCards] = useState([]);
 
-    useEffect(() => {
+    function updateExpansionsList() {
         wp.apiFetch({path: 'bye/v1/expansions'}).then(data => {
             setExpansions(data);
         }, error => {
-            console.log(attributes.cardId + " / " + error)
-        });
-        if (attributes.expansion) {
-            wp.apiFetch({path: 'bye/v1/cards/' + attributes.expansion}).then(data => {
+            console.log([attributes.cardId, error]);
+        })
+    }
+
+    function updateCardsList() {
+        const versionParam = attributes.version.trim().length > 0
+            ? '?max_version=' + attributes.version
+            : '';
+        wp.apiFetch({path: 'bye/v1/cards/' + attributes.expansion + versionParam})
+            .then(data => {
                 setCards(data.sort((a, b) => a.code - b.code));
-            }, error => {
-                console.log(attributes.cardId + " / " + error)
-            })
-        }
-    }, []);
+            }, error => {console.log([attributes.cardId, error])});
+    }
+
+    useEffect(() => {
+        updateExpansionsList();
+    }, [])
+    useEffect(() => {
+        updateCardsList();
+    }, [attributes.expansion, attributes.version]);
 
     return <div {...blockProps}>
         <InspectorControls>
@@ -42,9 +52,6 @@ export const edit = function ({attributes, setAttributes}) {
                         disabled: (expansions.length === 0),
                         onChange: function (event) {
                             setAttributes({expansion: event.target.value})
-                            wp.apiFetch({path: 'bye/v1/cards/' + event.target.value}).then(data => {
-                                setCards(data.sort((a, b) => a.code - b.code));
-                            })
                         }
                     }}>
                         {expansions.map((expansion) => {
@@ -69,7 +76,7 @@ export const edit = function ({attributes, setAttributes}) {
                 <fieldset>
                     <legend>Max. Version</legend>
                     <input {...{
-                        value: attributes.version, onChange: function (event) {
+                        value: attributes.version, onChange: function(event) {
                             setAttributes({version: event.target.value})
                         }
                     }}/>
@@ -79,6 +86,7 @@ export const edit = function ({attributes, setAttributes}) {
         <img className="bye-card-image" src={imgUrl}
              alt="Preview Image"/>
         <h2 className="bye-card-cardname">{cards.find(c => c.code === attributes.cardId)?.name ?? ''}</h2>
-        <p className="bye-card-cardtext"><span>{cards.find(c => c.code === attributes.cardId)?.description ?? ''}</span></p>
+        <p className="bye-card-cardtext"><span>{cards.find(c => c.code === attributes.cardId)?.description ?? ''}</span>
+        </p>
     </div>
 };
