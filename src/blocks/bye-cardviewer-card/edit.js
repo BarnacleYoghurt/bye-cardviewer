@@ -3,14 +3,9 @@ import {PanelBody} from '@wordpress/components';
 import {useState, useEffect} from '@wordpress/element';
 
 const _siteUrl = 'https://bye-project.xyz'; //better replace this with a get_site_url passed in from PHP
-const blockStyle = {
-    backgroundColor: '#900',
-    color: '#fff',
-    padding: '20px',
-};
 
 export const edit = function ({attributes, setAttributes}) {
-    const blockProps = useBlockProps({style: blockStyle});
+    const blockProps = useBlockProps({style: {backgroundColor: '#000'}});
 
     let imgUrl = _siteUrl + '/wp-content/uploads/cards/' + attributes.expansion + '/' + attributes.version + '/' + attributes.cardId + '.png';
     let testImage = new Image();
@@ -81,7 +76,9 @@ export const edit = function ({attributes, setAttributes}) {
                 </fieldset>
             </PanelBody>
         </InspectorControls>
-        <img {...{src: imgUrl}}
+        <img className="bye-card-image" src={imgUrl}
              alt="Preview Image"/>
+        <h2 className="bye-card-cardname">{cards.find(c => c.code === attributes.cardId)?.name ?? ''}</h2>
+        <p className="bye-card-cardtext"><span>{cards.find(c => c.code === attributes.cardId)?.description ?? ''}</span></p>
     </div>
 };
