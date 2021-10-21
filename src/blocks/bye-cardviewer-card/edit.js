@@ -27,7 +27,7 @@ export const edit = function ({attributes, setAttributes}) {
         });
         if (attributes.expansion) {
             wp.apiFetch({path: 'bye/v1/cards/' + attributes.expansion}).then(data => {
-                setCards(data);
+                setCards(data.sort((a,b) => a.code - b.code));
             })
         }
     }, []);
@@ -37,7 +37,7 @@ export const edit = function ({attributes, setAttributes}) {
             placeholder: 'Expansion', value: attributes.expansion, onChange: function (event) {
                 setAttributes({expansion: event.target.value})
                 wp.apiFetch({path: 'bye/v1/cards/' + event.target.value}).then(data => {
-                    setCards(data);
+                    setCards(data.sort((a,b) => a.code - b.code));
                 })
             }
         }}>
