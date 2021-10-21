@@ -108,12 +108,12 @@ class DatabaseTest extends WP_UnitTestCase
 
         $this->assertEquals(1, count($code_counts));
         $this->assertEquals(count($cards), $code_counts[1]);
-        $this->assertContains('000002', array_column($cards, 'version'));
+        $this->assertContains('0.0.2', array_column($cards, 'version'));
     }
 
     public function testAllCardsWithMaxVersionContainsOnlyCardsUpToVersion(){
         $cards = $this->classInstance->all_cards('0.0.1');
-        $this->assertNotContains('000002', array_column($cards, 'version'));
+        $this->assertNotContains('0.0.2', array_column($cards, 'version'));
     }
 
     public function testAllCardsWithLanguageContainsOnlyCardsInLanguage(){

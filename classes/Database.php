@@ -93,7 +93,7 @@ class Database
     {
         $canonical_version = $this->canonicalize_version_string($max_version);
         global $wpdb;
-        return $wpdb->get_results($wpdb->prepare("SELECT c.*, t.*, e.id as expansion_id FROM {$this->table_cards()} c
+        $result = $wpdb->get_results($wpdb->prepare("SELECT c.*, t.*, e.id as expansion_id FROM {$this->table_cards()} c
                                     JOIN {$this->table_expansions()} e ON c.expansion_id = e.id 
                                     JOIN {$this->table_cardtexts()} t ON c.id = t.card_id
                                     JOIN 
@@ -103,13 +103,17 @@ class Database
                                         GROUP BY code) sq 
                                     ON sq.code = c.code AND sq.version = c.version
                                     WHERE t.lang = %s", $canonical_version, $lang));
+        foreach ($result as $card) {
+            $card->version = $this->decanonicalize_version_string($card->version);
+        }
+        return $result;
     }
 
     public function all_cards_in_expansion($expansion_code, $max_version = '99.99.99', $lang = 'en')
     {
         $canonical_version = $this->canonicalize_version_string($max_version);
         global $wpdb;
-        return $wpdb->get_results($wpdb->prepare("SELECT c.*, t.*, e.id as expansion_id FROM {$this->table_cards()} c 
+        $result = $wpdb->get_results($wpdb->prepare("SELECT c.*, t.*, e.id as expansion_id FROM {$this->table_cards()} c 
                                                     JOIN {$this->table_expansions()} e ON c.expansion_id = e.id 
                                                     JOIN {$this->table_cardtexts()} t ON c.id = t.card_id
                                                     JOIN 
@@ -119,6 +123,10 @@ class Database
                                                         GROUP BY code) sq 
                                                     ON sq.code = c.code AND sq.version = c.version
                                                     WHERE t.lang=%s AND e.code=%s", $canonical_version, $lang, $expansion_code));
+        foreach ($result as $card) {
+            $card->version = $this->decanonicalize_version_string($card->version);
+        }
+        return $result;
     }
 
     function find_card($code, $max_version, $lang = 'en'): CardInfo
