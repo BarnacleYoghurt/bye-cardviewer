@@ -22,7 +22,7 @@ export const edit = function ({attributes, setAttributes}) {
     }
 
     function updateCardsList() {
-        const versionParam = (attributes.version && attributes.version.trim().length > 0)
+        const versionParam = attributes.version
             ? '?max_version=' + attributes.version
             : '';
         wp.apiFetch({path: 'bye/v1/cards/' + attributes.expansion + versionParam})
@@ -87,7 +87,7 @@ export const edit = function ({attributes, setAttributes}) {
                     <legend>Max. Version</legend>
                     <input {...{
                         value: attributes.version, onChange: function (event) {
-                            setAttributes({version: event.target.value})
+                            setAttributes({version: event.target.value.trim().length > 0 ? event.target.value : null})
                         }
                     }}/>
                 </fieldset>
