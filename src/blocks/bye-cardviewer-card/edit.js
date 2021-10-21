@@ -24,17 +24,17 @@ export const edit = function ({attributes, setAttributes}) {
     useEffect(() => {
         wp.apiFetch({path: 'bye/v1/expansions'}).then(data => {
             setExpansions(data);
-        });
+        }, error => { console.log(attributes.cardId + " / " + error) });
         if (attributes.expansion) {
             wp.apiFetch({path: 'bye/v1/cards/' + attributes.expansion}).then(data => {
                 setCards(data.sort((a,b) => a.code - b.code));
-            })
+            }, error => { console.log(attributes.cardId + " / " + error) })
         }
     }, []);
 
     return <div {...blockProps}>
         <select {...{
-            placeholder: 'Expansion', value: attributes.expansion, onChange: function (event) {
+            placeholder: 'Expansion', value: attributes.expansion, disabled: (expansions.length === 0), onChange: function (event) {
                 setAttributes({expansion: event.target.value})
                 wp.apiFetch({path: 'bye/v1/cards/' + event.target.value}).then(data => {
                     setCards(data.sort((a,b) => a.code - b.code));
@@ -46,7 +46,7 @@ export const edit = function ({attributes, setAttributes}) {
             })}
         </select>
         <select {...{
-            placeholder: 'CardID', value: attributes.cardId, onChange: function (event) {
+            placeholder: 'CardID', value: attributes.cardId, disabled: (cards.length === 0), onChange: function (event) {
                 setAttributes({cardId: event.target.value})
             }
         }}>
