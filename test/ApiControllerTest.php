@@ -30,7 +30,7 @@ class ApiControllerTest extends WP_UnitTestCase
         $fake_cards = array('c1', 'c2', 'c3');
         $this->dbStub->method('all_cards')->willReturn($fake_cards);
 
-        $response = $this->classInstance->get_cards(array('expansion_code' => ''));
+        $response = $this->classInstance->get_cards(array('expansion_code' => '', 'max_version' => '99.99.99', 'lang' => 'en'));
         $this->assertEquals(200, $response->get_status());
         $this->assertEquals($fake_cards, $response->get_data());
     }
@@ -41,7 +41,7 @@ class ApiControllerTest extends WP_UnitTestCase
         $fake_cards = array('c1', 'c2');
         $this->dbStub->method('all_cards_in_expansion')->willReturn($fake_cards);
 
-        $response = $this->classInstance->get_cards(array('expansion_code' => 'test'));
+        $response = $this->classInstance->get_cards(array('expansion_code' => 'test', 'max_version' => '99.99.99', 'lang' => 'en'));
         $this->assertEquals(200, $response->get_status());
         $this->assertEquals($fake_cards, $response->get_data());
     }

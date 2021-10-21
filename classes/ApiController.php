@@ -29,7 +29,10 @@ class ApiController extends WP_REST_Controller
             'methods' => WP_REST_Server::READABLE,
             'callback' => array($this, 'get_cards'),
             'permission_callback' => '__return_true',
-            'args' => array(),
+            'args' => array(
+                'max_version' => array('default' => '99.99.99'),
+                'lang' => array('default' => 'en')
+            ),
         ));
     }
 
@@ -40,10 +43,12 @@ class ApiController extends WP_REST_Controller
 
     function get_cards($data){
         $expansion_code = $data['expansion_code'];
+        $max_version = $data['max_version'];
+        $lang = $data['lang'];
         if (isset($expansion_code) && strlen($expansion_code) > 0) {
-            return new WP_REST_Response($this->database->all_cards_in_expansion($expansion_code), 200);
+            return new WP_REST_Response($this->database->all_cards_in_expansion($expansion_code,$max_version,$lang), 200);
         } else {
-            return new WP_REST_Response($this->database->all_cards(), 200);
+            return new WP_REST_Response($this->database->all_cards($max_version,$lang), 200);
         }
     }
 }
