@@ -1,6 +1,6 @@
 <?php
 
-require_once(__DIR__ . '\..\bye-cardviewer.php'); //Manually load plugin so it doesn't need to be in WP Dev directory
+require_once(__DIR__ . '/../bye-cardviewer.php'); //Manually load plugin so it doesn't need to be in WP Dev directory
 
 use bye_plugin\Blocks;
 use bye_plugin\CardInfo;
@@ -173,7 +173,11 @@ class BlocksTest extends WP_UnitTestCase
             'className' => ''
         );
 
+        \WP_Block_Supports::$block_to_render = array(
+            'blockName' => '',
+            'attrs' => ''); //Pretend we are actually WP rendering the block
         $output = $this->classInstance->bye_cardviewer_card_render($blockAttributes, '');
+        \WP_Block_Supports::$block_to_render = null;
 
         $this->assertStringContainsString('THE CARD TYPE', $output);
         $this->assertStringContainsString('THE CARD TYPE', $output);

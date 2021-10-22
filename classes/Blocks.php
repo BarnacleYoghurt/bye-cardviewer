@@ -40,15 +40,14 @@ class Blocks
 
     function bye_cardviewer_card_render($block_attributes, $content)
     {
-        $image_url = '/cards/' . $block_attributes['expansion'] . '/' . $block_attributes['version'] . '/' . $block_attributes['cardId'] . '.png';
-        if (!file_exists(wp_upload_dir()['basedir'] . $image_url)) {
-            $image_url = substr($image_url, 0, strlen($image_url) - 4) . '.jpg';
-        }
-        $image_url = wp_upload_dir()['baseurl'] . $image_url;
-
         try {
-            $carddata = $this->database->find_card($block_attributes['cardId'], $block_attributes['version']);
+            $carddata = $this->database->find_card($block_attributes['cardId'], $block_attributes['version'] ?? '99.99.99');
             $expansion_name = $this->database->get_expansion($carddata->getExpansionId())->name;
+            $image_url = '/cards/' . $block_attributes['expansion'] . '/' . $carddata->getVersion() . '/' . $carddata->getCode() . '.png';
+            if (!file_exists(wp_upload_dir()['basedir'] . $image_url)) {
+                $image_url = substr($image_url, 0, strlen($image_url) - 4) . '.jpg';
+            }
+            $image_url = wp_upload_dir()['baseurl'] . $image_url;
 
             $el_img = sprintf('<a class="bye-card-image" href="%s"><img src="%s"/></a>', $image_url, $image_url);
             $el_cardname = sprintf('<h3 class="bye-card-cardname">%s</h3>', $carddata->getName());
@@ -57,7 +56,7 @@ class Blocks
             $el_cardtext = sprintf('<p class="bye-card-cardtext"><span>%s</span></p>', $this->format_cardtext($carddata->getDescription()));
             $el_metadata = sprintf('<span class="bye-card-meta">%s (v%s)</span>', $expansion_name, $carddata->getVersion());
 
-            return sprintf('<div class="%s">%s%s%s%s%s%s</div>', $block_attributes['className'],
+            return sprintf('<div %s>%s%s%s%s%s%s</div>', get_block_wrapper_attributes(),
                 $el_img, $el_cardname, $el_cardtype, $el_cardstats, $el_cardtext, $el_metadata);
         } catch (DBException $e) {
             return sprintf('<div class="bye-card-error">

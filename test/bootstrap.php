@@ -15,5 +15,5 @@ defineFromEnv('WP_PLUGIN_DIR');
 defineFromEnv('WP_TESTS_PHPUNIT_POLYFILLS_PATH');
 
 if (false !== getenv('WP_DEVELOP_DIR')) {
-    require getenv('WP_DEVELOP_DIR') . '\tests\phpunit\includes\bootstrap.php';
+    require getenv('WP_DEVELOP_DIR') . '/tests/phpunit/includes/bootstrap.php';
 }
