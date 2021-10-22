@@ -75,29 +75,30 @@ class Blocks
             } elseif ($carddata->isLink()) {
                 $arrows = '';
                 if ($carddata->isLinkArrow(CardInfo::LINK_MARKER_LEFT)) {
-                    $arrows .= '&#9664;'; //◀
+                    $arrows .= '&#9664; '; //◀
                 }
                 if ($carddata->isLinkArrow(CardInfo::LINK_MARKER_TOP_LEFT)) {
-                    $arrows .= '&#8598;'; //↖
+                    $arrows .= '&#8598; '; //↖
                 }
                 if ($carddata->isLinkArrow(CardInfo::LINK_MARKER_TOP)) {
-                    $arrows .= '&#9650;'; //▲
+                    $arrows .= '&#9650; '; //▲
                 }
                 if ($carddata->isLinkArrow(CardInfo::LINK_MARKER_TOP_RIGHT)) {
-                    $arrows .= '&#8599;'; //↗
+                    $arrows .= '&#8599; '; //↗
                 }
                 if ($carddata->isLinkArrow(CardInfo::LINK_MARKER_BOTTOM_LEFT)) {
-                    $arrows .= '&#8601;'; //↙
+                    $arrows .= '&#8601; '; //↙
                 }
                 if ($carddata->isLinkArrow(CardInfo::LINK_MARKER_BOTTOM)) {
-                    $arrows .= '&#9660;'; //▼
+                    $arrows .= '&#9660; '; //▼
                 }
                 if ($carddata->isLinkArrow(CardInfo::LINK_MARKER_BOTTOM_RIGHT)) {
-                    $arrows .= '&#8600;'; //↘
+                    $arrows .= '&#8600; '; //↘
                 }
                 if ($carddata->isLinkArrow(CardInfo::LINK_MARKER_RIGHT)) {
-                    $arrows .= '&#9654;'; //▶
+                    $arrows .= '&#9654; '; //▶
                 }
+                $arrows = trim($arrows); //Remove trailing space
 
                 $stats = sprintf('Link-%d [%s]', $carddata->getLevel(), $arrows);
             } else {
