@@ -58,7 +58,7 @@ class Admin
                             ));
                             echo("<li>Card {$id} ({$card['name']}) inserted into database.</li>");
                         } catch (DBException $e) {
-                            echo("<li>Could not insert card {$id} ({$card['name']}).</li>");
+                            echo("<li style='color:darkred'>Could not insert card {$id} ({$card['name']}).</li>");
                         }
 
                         $attachment_id = attachment_url_to_postid('cards/' . $_POST['version'] . '/' . $expansion_code . '/en/' . $id . '.png');
@@ -74,7 +74,7 @@ class Admin
                             echo("<li>Caption and description on existing image for card {$id} ({$card['name']}) updated.</li>");
                         }
                         else {
-                            echo("<li>No image found for card {$id} ({$card['name']}), please manually update caption and description after uploading.</li>");
+                            echo("<li style='color:darkred'>No image found for card {$id} ({$card['name']}), please manually update caption and description after uploading.</li>");
                         }
                     }
                     ?>
