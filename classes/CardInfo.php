@@ -311,7 +311,7 @@ class CardInfo
     public function getRScale(): int
     {
         if ($this->isPendulum()) {
-            return $this->level / 0x10000;
+            return ($this->level % 0x1000000) / 0x10000;
         }
         else {
             return -1;
