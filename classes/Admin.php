@@ -40,6 +40,7 @@ class Admin
                         $card = $q->execute()->fetchArray(SQLITE3_ASSOC);
 
                         $expansion_id = $_POST['expansion'];
+                        $expansion_code = $this->database->get_expansion($expansion_id)->code;
 
                         try {
                             $this->database->create_card(array(
@@ -58,6 +59,22 @@ class Admin
                             echo("<li>Card {$id} ({$card['name']}) inserted into database.</li>");
                         } catch (DBException $e) {
                             echo("<li>Could not insert card {$id} ({$card['name']}).</li>");
+                        }
+
+                        $attachment_id = attachment_url_to_postid('cards/' . $_POST['version'] . '/' . $expansion_code . '/en/' . $id . '.png');
+                        if ($attachment_id === 0) {
+                            $attachment_id = attachment_url_to_postid('cards/' . $_POST['version'] . '/' . $expansion_code . '/en/' . $id . '.jpg');
+                        }
+                        $formatted_cardtext = str_replace('\\"', '"',
+                            str_replace('\\\'', '\'',
+                                str_replace("\n", "<br/>", $card['desc']))); //TODO: Extract function from Blocks for reuse here
+
+                        if ($attachment_id !== 0 &&
+                            wp_update_post(array('ID' => $attachment_id, 'post_excerpt' => $card['name'], 'post_content' => $formatted_cardtext)) !== 0) {
+                            echo("<li>Caption and description on existing image for card {$id} ({$card['name']}) updated.</li>");
+                        }
+                        else {
+                            echo("<li>No image found for card {$id} ({$card['name']}), please manually update caption and description after uploading.</li>");
                         }
                     }
                     ?>
