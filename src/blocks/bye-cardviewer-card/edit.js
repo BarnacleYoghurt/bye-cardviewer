@@ -50,7 +50,7 @@ export const edit = function ({attributes, setAttributes}) {
         }
         testImage.src = _imgUrl;
 
-    }, [attributes.expansion, attributes.cardId, attributes.version])
+    }, [attributes.expansion, attributes.cardId, attributes.version, cards])
 
     return <div {...blockProps}>
         <InspectorControls>
