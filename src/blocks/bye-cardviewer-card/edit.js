@@ -40,7 +40,7 @@ export const edit = function ({attributes, setAttributes}) {
         updateCardsList();
     }, [attributes.expansion, attributes.version]);
     useEffect(() => {
-        let _imgUrl = _siteUrl + '/wp-content/uploads/cards/' + attributes.expansion + '/' + selectedCard?.version + '/' + attributes.cardId + '.png';
+        let _imgUrl = _siteUrl + '/wp-content/uploads/cards/' + selectedCard?.version + '/' + attributes.expansion + '/en/' + attributes.cardId + '.png';
         let testImage = new Image();
         testImage.onload = () => {
             setImgUrl(_imgUrl);

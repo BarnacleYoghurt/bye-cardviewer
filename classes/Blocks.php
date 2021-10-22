@@ -43,7 +43,7 @@ class Blocks
         try {
             $carddata = $this->database->find_card($block_attributes['cardId'], $block_attributes['version'] ?? '99.99.99');
             $expansion_name = $this->database->get_expansion($carddata->getExpansionId())->name;
-            $image_url = '/cards/' . $block_attributes['expansion'] . '/' . $carddata->getVersion() . '/' . $carddata->getCode() . '.png';
+            $image_url = '/cards/' . $carddata->getVersion() . '/' . $block_attributes['expansion'] . '/en/' . $carddata->getCode() . '.png';
             if (!file_exists(wp_upload_dir()['basedir'] . $image_url)) {
                 $image_url = substr($image_url, 0, strlen($image_url) - 4) . '.jpg';
             }
