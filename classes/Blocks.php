@@ -134,4 +134,18 @@ class Blocks
             str_replace('\\\'', '\'',
                 str_replace("\n", "<br/>", $text)));
     }
+
+    function shortcode_cotd(){
+        $cards = $this->database->all_cards();
+        $today = fmod(hexdec((hash("crc32c", date("Y-m-d",time())))), count($cards));
+        $carddata = $this->database->find_card($cards[$today]->code, '99.99.99');
+        $expansion = $this->database->get_expansion($carddata->getExpansionId());
+        $image_url = '/cards/' . $carddata->getVersion() . '/' . $expansion->code . '/en/' . $carddata->getCode() . '.png';
+        if (!file_exists(wp_upload_dir()['basedir'] . $image_url)) {
+            $image_url = substr($image_url, 0, strlen($image_url) - 4) . '.jpg';
+        }
+        $image_url = wp_upload_dir()['baseurl'] . $image_url;
+
+        return '<h2 class="widget-title">Card of the Day</h2>'.sprintf('<a class="bye-card-image" href="%s"><img src="%s"/></a>',$image_url,$image_url);
+    }
 }

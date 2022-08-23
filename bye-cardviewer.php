@@ -23,3 +23,5 @@ add_action('block_categories_all', array($blocks, 'register_categories'));
 add_action('init', array($blocks, 'register_blocks'));
 add_action('admin_menu', array($admin, 'setup_menu'));
 add_action('rest_api_init', array($apiController, 'register_routes'));
+
+add_shortcode('cardOfTheDay', array($blocks,'shortcode_cotd'));
