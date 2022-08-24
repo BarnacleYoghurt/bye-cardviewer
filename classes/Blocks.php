@@ -146,6 +146,6 @@ class Blocks
         }
         $image_url = wp_upload_dir()['baseurl'] . $image_url;
 
-        return '<h2 class="widget-title">Card of the Day</h2>'.sprintf('<a class="bye-card-image" href="%s"><img src="%s"/></a>',$image_url,$image_url);
+        return '<h2 class="widget-title">Card of the Day</h2>'.sprintf('<a class="bye-card-image" href="%s"><img src="%s"/></a>',get_option('cotd-page'),$image_url);
     }
 }
