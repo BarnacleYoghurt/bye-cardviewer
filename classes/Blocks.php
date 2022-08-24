@@ -42,10 +42,8 @@ class Blocks
     {
         try {
             if ($block_attributes['cardOfTheDay']) {
-                //TODO: Move this calculation to some central point where both Blocks and ApiController can access it
-                $cards = $this->database->all_cards();
-                $today = fmod(hexdec((hash("crc32c", date("Y-m-d",time())))), count($cards));
-                $carddata = $this->database->find_card($cards[$today]->code, '99.99.99');
+                $cotd = $this->database->find_card_ofTheDay();
+                $carddata = $this->database->find_card($cotd->code, '99.99.99');
             }
             else {
                 $carddata = $this->database->find_card($block_attributes['cardId'], $block_attributes['version'] ?? '99.99.99');
@@ -136,11 +134,10 @@ class Blocks
     }
 
     function shortcode_cotd(){
-        $cards = $this->database->all_cards();
-        $today = fmod(hexdec((hash("crc32c", date("Y-m-d",time())))), count($cards));
-        $carddata = $this->database->find_card($cards[$today]->code, '99.99.99');
-        $expansion = $this->database->get_expansion($carddata->getExpansionId());
-        $image_url = '/cards/' . $carddata->getVersion() . '/' . $expansion->code . '/en/' . $carddata->getCode() . '.png';
+        $cotd = $this->database->find_card_ofTheDay();
+        $cardinfo = $this->database->find_card($cotd->code, '99.99.99'); //add wrapper
+        $expansion = $this->database->get_expansion($cardinfo->getExpansionId());
+        $image_url = '/cards/' . $cardinfo->getVersion() . '/' . $expansion->code . '/en/' . $cardinfo->getCode() . '.png';
         if (!file_exists(wp_upload_dir()['basedir'] . $image_url)) {
             $image_url = substr($image_url, 0, strlen($image_url) - 4) . '.jpg';
         }

@@ -61,8 +61,10 @@ class ApiController extends WP_REST_Controller
 
     function get_cardoftheday($data)
     {
-        $cards = $this->database->all_cards();
-        $today = fmod(hexdec((hash("crc32c", date("Y-m-d",time())))), count($cards));
-        return new WP_REST_Response($cards[$today],200);
+        try {
+            return new WP_REST_Response($this->database->find_card_ofTheDay(), 200);
+        } catch (DBException $e) {
+            return new WP_REST_Response($e,404);
+        }
     }
 }

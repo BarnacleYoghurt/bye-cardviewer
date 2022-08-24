@@ -162,6 +162,16 @@ class Database
         }
     }
 
+    function find_card_ofTheDay($lang = 'en') {
+        $cards = $this->all_cards('99.99.99',$lang);
+        if (count($cards) > 0) {
+            $today = fmod(hexdec((hash("crc32c", date("Y-m-d", time())))), count($cards));
+            return $cards[$today];
+        } else {
+            throw new DBException('Cannot get card of the day because there are no cards!');
+        }
+    }
+
     function create_card($data): int
     {
         global $wpdb;
