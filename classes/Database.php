@@ -166,7 +166,7 @@ class Database
         $cards = $this->all_cards('99.99.99',$lang);
         if (count($cards) > 0) {
             $today = fmod(hexdec((hash("crc32c", date("Y-m-d", time())))), count($cards));
-            return $cards[$today];
+            return $this->find_card($cards[$today]->code, '99.99.99');
         } else {
             throw new DBException('Cannot get card of the day because there are no cards!');
         }

@@ -2,7 +2,7 @@
 
 namespace bye_plugin;
 
-class CardInfo
+class CardInfo implements \JsonSerializable
 {
     public const TYPE_MONSTER       = 0x1;
     public const TYPE_SPELL         = 0x2;
@@ -362,4 +362,20 @@ class CardInfo
         return $this->description;
     }
 
+    public function jsonSerialize()
+    {
+        return array(
+            'code' => $this->getCode(),
+            'version' => $this->getVersion(),
+            'expansion_id' => $this->getExpansionId(),
+            'type' => $this->getType(),
+            'attribute' => $this->getAttribute(),
+            'race' => $this->getRace(),
+            'level' => $this->getLevel(),
+            'atk' => $this->getAtk(),
+            'def' => $this->getDef(),
+            'lang' => $this->getLang(),
+            'name' => $this->getName(),
+            'description' => $this->getDescription());
+    }
 }

@@ -42,8 +42,7 @@ class Blocks
     {
         try {
             if ($block_attributes['cardOfTheDay']) {
-                $cotd = $this->database->find_card_ofTheDay();
-                $carddata = $this->database->find_card($cotd->code, '99.99.99');
+                $carddata  = $this->database->find_card_ofTheDay();
             }
             else {
                 $carddata = $this->database->find_card($block_attributes['cardId'], $block_attributes['version'] ?? '99.99.99');
@@ -134,8 +133,7 @@ class Blocks
     }
 
     function shortcode_cotd(){
-        $cotd = $this->database->find_card_ofTheDay();
-        $cardinfo = $this->database->find_card($cotd->code, '99.99.99'); //add wrapper
+        $cardinfo = $this->database->find_card_ofTheDay();
         $expansion = $this->database->get_expansion($cardinfo->getExpansionId());
         $image_url = '/cards/' . $cardinfo->getVersion() . '/' . $expansion->code . '/en/' . $cardinfo->getCode() . '.png';
         if (!file_exists(wp_upload_dir()['basedir'] . $image_url)) {
