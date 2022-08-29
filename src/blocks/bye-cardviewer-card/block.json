@@ -1,7 +1,7 @@
 {
   "name": "bye-cardviewer/card",
   "apiVersion": 2,
-  "version": "0.0.5",
+  "version": "0.0.6",
   "title": "BYE Card",
   "editorScript": "file:./index.js",
   "style": "file:./styles.css",
@@ -18,6 +18,9 @@
     },
     "version": {
       "type": "string"
+    },
+    "cardOfTheDay": {
+      "type": "boolean"
     }
   }
 }

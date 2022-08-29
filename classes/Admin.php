@@ -17,6 +17,15 @@ class Admin
     {
         add_menu_page('BYE Cards', 'BYE Cards', 'manage_options', 'bye-cards', array($this, 'admin_page_cards'));
         add_submenu_page('bye-cards', 'BYE Expansions', 'BYE Expansions', 'manage_options', 'bye-expansions', array($this, 'admin_page_expansions'));
+
+        add_options_page('BYE Settings', 'BYE Settings', 'manage_options', 'bye-settings', array($this, 'admin_page_settings'));
+        add_settings_section('cotd','Card of the Day',function(){},'bye-settings');
+        register_setting('bye-settings', 'cotd-page', array(
+            'type' => 'string',
+            'description' => 'Card of the Day Page',
+            'default' => '#'
+        ));
+        add_settings_field('cotd-page', 'Card of the Day Page', array($this, 'admin_field_cotdPage'), 'bye-settings', 'cotd');
     }
 
     function admin_page_cards()
@@ -72,8 +81,7 @@ class Admin
                         if ($attachment_id !== 0 &&
                             wp_update_post(array('ID' => $attachment_id, 'post_excerpt' => $card['name'], 'post_content' => $formatted_cardtext)) !== 0) {
                             echo("<li>Caption and description on existing image for card {$id} ({$card['name']}) updated.</li>");
-                        }
-                        else {
+                        } else {
                             echo("<li style='color:darkred'>No image found for card {$id} ({$card['name']}), please manually update caption and description after uploading.</li>");
                         }
                     }
@@ -218,6 +226,32 @@ class Admin
             </form>
         </div>
 
+        <?php
+    }
+
+    function admin_page_settings()
+    {
+        if (current_user_can('manage_options')) {
+            ?>
+            <div class="wrap">
+                <h1>BYE Settings</h1>
+                <form action="options.php" method="post">
+                    <?php
+                    settings_fields('bye-settings');
+                    do_settings_sections('bye-settings');
+                    submit_button('Save Settings');
+                    ?>
+                </form>
+            </div>
+            <?php
+        }
+    }
+
+    function admin_field_cotdPage($args)
+    {
+        $cotdPage = get_option('cotd-page');
+        ?>
+        <input name="cotd-page" value="<?php echo $cotdPage ?>"/>
         <?php
     }
 }

@@ -34,6 +34,12 @@ class ApiController extends WP_REST_Controller
                 'lang' => array('default' => 'en')
             ),
         ));
+        register_rest_route($namespace, '/cardoftheday', array(
+            'methods' => WP_REST_Server::READABLE,
+            'callback' => array($this, 'get_cardoftheday'),
+            'permission_callback' => '__return_true',
+            'args' => array(),
+        ));
     }
 
     function get_expansions($data)
@@ -41,14 +47,24 @@ class ApiController extends WP_REST_Controller
         return new WP_REST_Response($this->database->all_expansions(), 200);
     }
 
-    function get_cards($data){
+    function get_cards($data)
+    {
         $expansion_code = $data['expansion_code'];
         $max_version = $data['max_version'];
         $lang = $data['lang'];
         if (isset($expansion_code) && strlen($expansion_code) > 0) {
-            return new WP_REST_Response($this->database->all_cards_in_expansion($expansion_code,$max_version,$lang), 200);
+            return new WP_REST_Response($this->database->all_cards_in_expansion($expansion_code, $max_version, $lang), 200);
         } else {
-            return new WP_REST_Response($this->database->all_cards($max_version,$lang), 200);
+            return new WP_REST_Response($this->database->all_cards($max_version, $lang), 200);
+        }
+    }
+
+    function get_cardoftheday($data)
+    {
+        try {
+            return new WP_REST_Response($this->database->find_card_ofTheDay(), 200);
+        } catch (DBException $e) {
+            return new WP_REST_Response($e,404);
         }
     }
 }

@@ -41,9 +41,14 @@ class Blocks
     function bye_cardviewer_card_render($block_attributes, $content)
     {
         try {
-            $carddata = $this->database->find_card($block_attributes['cardId'], $block_attributes['version'] ?? '99.99.99');
-            $expansion_name = $this->database->get_expansion($carddata->getExpansionId())->name;
-            $image_url = '/cards/' . $carddata->getVersion() . '/' . $block_attributes['expansion'] . '/en/' . $carddata->getCode() . '.png';
+            if ($block_attributes['cardOfTheDay']) {
+                $carddata  = $this->database->find_card_ofTheDay();
+            }
+            else {
+                $carddata = $this->database->find_card($block_attributes['cardId'], $block_attributes['version'] ?? '99.99.99');
+            }
+            $expansion = $this->database->get_expansion($carddata->getExpansionId());
+            $image_url = '/cards/' . $carddata->getVersion() . '/' . $expansion->code . '/en/' . $carddata->getCode() . '.png';
             if (!file_exists(wp_upload_dir()['basedir'] . $image_url)) {
                 $image_url = substr($image_url, 0, strlen($image_url) - 4) . '.jpg';
             }
@@ -54,7 +59,7 @@ class Blocks
             $el_cardtype = sprintf('<span class="bye-card-cardtype">%s</span>', $carddata->getTypeName());
             $el_cardstats = sprintf('<span class="bye-card-cardstats">%s</span>', $this->format_cardstats($carddata));
             $el_cardtext = sprintf('<p class="bye-card-cardtext"><span>%s</span></p>', $this->format_cardtext($carddata->getDescription()));
-            $el_metadata = sprintf('<span class="bye-card-meta">%s (v%s)</span>', $expansion_name, $carddata->getVersion());
+            $el_metadata = sprintf('<span class="bye-card-meta">%s (v%s)</span>', $expansion->name, $carddata->getVersion());
 
             return sprintf('<div %s>%s%s%s%s%s%s</div>', get_block_wrapper_attributes(),
                 $el_img, $el_cardname, $el_cardtype, $el_cardstats, $el_cardtext, $el_metadata);
@@ -125,5 +130,17 @@ class Blocks
         return str_replace('\\"', '"',
             str_replace('\\\'', '\'',
                 str_replace("\n", "<br/>", $text)));
+    }
+
+    function shortcode_cotd(){
+        $cardinfo = $this->database->find_card_ofTheDay();
+        $expansion = $this->database->get_expansion($cardinfo->getExpansionId());
+        $image_url = '/cards/' . $cardinfo->getVersion() . '/' . $expansion->code . '/en/' . $cardinfo->getCode() . '.png';
+        if (!file_exists(wp_upload_dir()['basedir'] . $image_url)) {
+            $image_url = substr($image_url, 0, strlen($image_url) - 4) . '.jpg';
+        }
+        $image_url = wp_upload_dir()['baseurl'] . $image_url;
+
+        return '<h2 class="widget-title">Card of the Day</h2>'.sprintf('<a class="bye-card-image" href="%s"><img src="%s"/></a>',get_option('cotd-page'),$image_url);
     }
 }

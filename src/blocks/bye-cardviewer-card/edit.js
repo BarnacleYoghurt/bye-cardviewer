@@ -1,5 +1,5 @@
 import {useBlockProps, InspectorControls} from '@wordpress/block-editor';
-import {PanelBody} from '@wordpress/components';
+import {PanelBody, ToggleControl} from '@wordpress/components';
 import {useState, useEffect} from '@wordpress/element';
 
 const _siteUrl = 'https://bye-project.xyz'; //better replace this with a get_site_url passed in from PHP
@@ -56,10 +56,21 @@ export const edit = function ({attributes, setAttributes}) {
         <InspectorControls>
             <PanelBody title={'Card Selection'} initialOpen={true}>
                 <fieldset>
+                    <legend>Card of the Day?</legend>
+                    <ToggleControl {...{
+                        help: "Display random card of the day instead of a specific card",
+                        checked: attributes.cardOfTheDay,
+                        onChange: function(event) {
+                                setAttributes({cardOfTheDay: !attributes.cardOfTheDay})
+                            }
+                        }}>
+                    </ToggleControl>
+                </fieldset>
+                <fieldset>
                     <legend>Expansion</legend>
                     <select {...{
                         value: attributes.expansion,
-                        disabled: (expansions.length === 0),
+                        disabled: (expansions.length === 0 || attributes.cardOfTheDay),
                         onChange: function (event) {
                             setAttributes({expansion: event.target.value})
                         }
@@ -73,7 +84,7 @@ export const edit = function ({attributes, setAttributes}) {
                     <legend>Card</legend>
                     <select {...{
                         value: attributes.cardId,
-                        disabled: (cards.length === 0),
+                        disabled: (cards.length === 0 || attributes.cardOfTheDay),
                         onChange: function (event) {
                             setAttributes({cardId: event.target.value})
                         }
@@ -86,6 +97,7 @@ export const edit = function ({attributes, setAttributes}) {
                 <fieldset>
                     <legend>Max. Version</legend>
                     <input {...{
+                        disabled:  attributes.cardOfTheDay,
                         value: attributes.version, onChange: function (event) {
                             setAttributes({version: event.target.value.trim().length > 0 ? event.target.value : null})
                         }
