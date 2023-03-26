@@ -42,13 +42,14 @@ class Blocks
     {
         try {
             if ($block_attributes['cardOfTheDay']) {
-                $carddata  = $this->database->find_card_ofTheDay();
+                $carddata  =  $this->database->find_card_ofTheDay($block_attributes['language'] ?? 'en');
             }
             else {
-                $carddata = $this->database->find_card($block_attributes['cardId'], $block_attributes['version'] ?? '99.99.99');
+                $carddata = $this->database->find_card($block_attributes['cardId'], $block_attributes['version'] ?? '99.99.99',
+                    $block_attributes['language'] ?? 'en');
             }
             $expansion = $this->database->get_expansion($carddata->getExpansionId());
-            $image_url = '/cards/' . $carddata->getVersion() . '/' . $expansion->code . '/en/' . $carddata->getCode() . '.png';
+            $image_url = '/cards/' . $carddata->getVersion() . '/' . $expansion->code . '/' . $carddata->getLang() . '/' . $carddata->getCode() . '.png';
             if (!file_exists(wp_upload_dir()['basedir'] . $image_url)) {
                 $image_url = substr($image_url, 0, strlen($image_url) - 4) . '.jpg';
             }
