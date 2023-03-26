@@ -187,19 +187,28 @@ class Database
             $text_data['lang'] = $data['lang'];
         }
 
-        if ($wpdb->insert($this->table_cards(), $card_data)) {
-            $card_id = $wpdb->insert_id;
-            $text_data['card_id'] = $card_id;
-            if ($wpdb->insert($this->table_cardtexts(), $text_data)) {
-                $wpdb->query('COMMIT');
-                return $card_id;
+        //Get ID of any existing identical card
+        $card_id = $wpdb->get_var(
+            $wpdb->prepare("SELECT id FROM {$this->table_cards()} WHERE code=%d and version=%s", $card_data['code'], $card_data['version'])
+        );
+
+        if ($card_id == null) { //only add base data if card does not exist yet
+            if ($wpdb->insert($this->table_cards(), $card_data)) {
+                $card_id = $wpdb->insert_id;
             } else {
                 $wpdb->query('ROLLBACK');
-                throw new DBException('Could not save card text data - transaction rolled back!');
+                throw new DBException('Could not save card base data - transaction rolled back!');
             }
+        }
+
+        //Always try adding text data
+        $text_data['card_id'] = $card_id;
+        if ($wpdb->insert($this->table_cardtexts(), $text_data)) {
+            $wpdb->query('COMMIT');
+            return $card_id;
         } else {
             $wpdb->query('ROLLBACK');
-            throw new DBException('Could not save card base data - transaction rolled back!');
+            throw new DBException('Could not save card text data - transaction rolled back!');
         }
     }
 
