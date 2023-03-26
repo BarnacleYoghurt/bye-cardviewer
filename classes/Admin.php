@@ -71,9 +71,9 @@ class Admin
                             echo("<li style='color:darkred'>Could not insert card {$id} ({$card['name']}).</li>");
                         }
 
-                        $attachment_id = attachment_url_to_postid('cards/' . $_POST['version'] . '/' . $expansion_code . '/en/' . $id . '.png');
+                        $attachment_id = attachment_url_to_postid('cards/' . $_POST['version'] . '/' . $expansion_code . '/' . $_POST['lang'] . '/' . $id . '.png');
                         if ($attachment_id === 0) {
-                            $attachment_id = attachment_url_to_postid('cards/' . $_POST['version'] . '/' . $expansion_code . '/en/' . $id . '.jpg');
+                            $attachment_id = attachment_url_to_postid('cards/' . $_POST['version'] . '/' . $expansion_code . '/' . $_POST['lang'] . '/' . $id . '.jpg');
                         }
                         $formatted_cardtext = str_replace('\\"', '"',
                             str_replace('\\\'', '\'',
@@ -107,6 +107,7 @@ class Admin
                         <form method="POST">
                             <input type="hidden" name="version" value="<?= $_POST['version'] ?>"/>
                             <input type="hidden" name="expansion" value="<?= $_POST['expansion'] ?>"/>
+                            <input type="hidden" name="lang" value="<?= $_POST['lang'] ?>"/>
                             <?php
                             while ($card = $cards->fetchArray(SQLITE3_ASSOC)) {
                                 ?>
