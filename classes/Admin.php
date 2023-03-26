@@ -34,7 +34,7 @@ class Admin
             $uploaddir = get_temp_dir();
 
             if (isset($_POST['ids'])) { //Import selected cards
-                $filename = $_POST['version'] . '_' . $_POST['expansion'] . '.cdb';
+                $filename = $_POST['version'] . '_' . $_POST['expansion'] . '_' . $_POST['lang'] . '.cdb';
                 ?>
 
                 <h1>BYE Card Upload Phase 3/3</h1>
@@ -55,6 +55,7 @@ class Admin
                             $this->database->create_card(array(
                                 'code' => $id,
                                 'version' => $_POST['version'],
+                                'lang' => $_POST['lang'],
                                 'expansion_id' => $expansion_id,
                                 'type' => $card['type'],
                                 'attribute' => $card['attribute'],
@@ -92,7 +93,7 @@ class Admin
                 <?php
                 unlink($uploaddir . $filename);
             } elseif (isset($_FILES['cdb'])) { //Select cards to import
-                $filename = $_POST['version'] . '_' . $_POST['expansion'] . '.cdb';
+                $filename = $_POST['version'] . '_' . $_POST['expansion'] . '_' . $_POST['lang'] . '.cdb';
 
                 if (move_uploaded_file($_FILES['cdb']['tmp_name'], $uploaddir . $filename)) {
                     try {
@@ -149,6 +150,11 @@ class Admin
                                         ?>
                                     </select>
                                 </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="t_lang"
+                                                       style="display:inline-block;width:16ch">Language</label></th>
+                                <td><input id="t_lang" name="lang" type="text" value="en" required/></td>
                             </tr>
                             <tr>
                                 <th scope="row"><label for="u_cdb" style="display:inline-block;width:16ch">CDB
