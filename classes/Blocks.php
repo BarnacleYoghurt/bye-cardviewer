@@ -41,7 +41,7 @@ class Blocks
     function bye_cardviewer_card_render($block_attributes, $content)
     {
         try {
-            if ($block_attributes['cardOfTheDay']) {
+            if (array_key_exists('cardOfTheDay', $block_attributes) && $block_attributes['cardOfTheDay']) {
                 $carddata  = $this->database->find_card_ofTheDay();
             }
             else {

@@ -164,7 +164,7 @@ class BlocksTest extends WP_UnitTestCase
         $cardInfo->method('getName')->willReturn('THE CARD NAME');
         $cardInfo->method('getTypeName')->willReturn('THE CARD TYPE');
         $this->dbStub->method('find_card')->willReturn($cardInfo);
-        $this->dbStub->method('get_expansion')->willReturn((object)array('name' => 'Test Expansion'));
+        $this->dbStub->method('get_expansion')->willReturn((object)array('name' => 'Test Expansion', 'code' => 'test'));
 
         $blockAttributes = array(
             'cardId' => 0,
