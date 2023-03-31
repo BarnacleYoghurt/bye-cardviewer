@@ -25,7 +25,10 @@ export const edit = function ({attributes, setAttributes}) {
         const versionParam = attributes.version
             ? '?max_version=' + attributes.version
             : '';
-        wp.apiFetch({path: 'bye/v1/cards/' + attributes.expansion + versionParam})
+        const langParam = attributes.language
+            ? '?lang=' + attributes.language
+            : '';
+        wp.apiFetch({path: 'bye/v1/cards/' + attributes.expansion + versionParam + langParam})
             .then(data => {
                 setCards(data.sort((a, b) => a.code - b.code));
             }, error => {
@@ -38,9 +41,9 @@ export const edit = function ({attributes, setAttributes}) {
     }, [])
     useEffect(() => {
         updateCardsList();
-    }, [attributes.expansion, attributes.version]);
+    }, [attributes.expansion, attributes.version, attributes.language]);
     useEffect(() => {
-        let _imgUrl = _siteUrl + '/wp-content/uploads/cards/' + selectedCard?.version + '/' + attributes.expansion + '/en/' + attributes.cardId + '.png';
+        let _imgUrl = _siteUrl + '/wp-content/uploads/cards/' + selectedCard?.version + '/' + attributes.expansion + '/' + selectedCard?.lang + '/' + attributes.cardId + '.png';
         let testImage = new Image();
         testImage.onload = () => {
             setImgUrl(_imgUrl);
@@ -50,7 +53,7 @@ export const edit = function ({attributes, setAttributes}) {
         }
         testImage.src = _imgUrl;
 
-    }, [attributes.expansion, attributes.cardId, attributes.version, cards])
+    }, [attributes.expansion, attributes.cardId, attributes.version, attributes.language, cards])
 
     return <div {...blockProps}>
         <InspectorControls>
@@ -100,6 +103,14 @@ export const edit = function ({attributes, setAttributes}) {
                         disabled:  attributes.cardOfTheDay,
                         value: attributes.version, onChange: function (event) {
                             setAttributes({version: event.target.value.trim().length > 0 ? event.target.value : null})
+                        }
+                    }}/>
+                </fieldset>
+                <fieldset>
+                    <legend>Language</legend>
+                    <input {...{
+                        value: attributes.language, onChange: function (event) {
+                            setAttributes({language: event.target.value.trim().length > 0 ? event.target.value : null})
                         }
                     }}/>
                 </fieldset>

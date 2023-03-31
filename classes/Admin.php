@@ -34,7 +34,7 @@ class Admin
             $uploaddir = get_temp_dir();
 
             if (isset($_POST['ids'])) { //Import selected cards
-                $filename = $_POST['version'] . '_' . $_POST['expansion'] . '.cdb';
+                $filename = $_POST['version'] . '_' . $_POST['expansion'] . '_' . $_POST['lang'] . '.cdb';
                 ?>
 
                 <h1>BYE Card Upload Phase 3/3</h1>
@@ -55,6 +55,7 @@ class Admin
                             $this->database->create_card(array(
                                 'code' => $id,
                                 'version' => $_POST['version'],
+                                'lang' => $_POST['lang'],
                                 'expansion_id' => $expansion_id,
                                 'type' => $card['type'],
                                 'attribute' => $card['attribute'],
@@ -70,9 +71,9 @@ class Admin
                             echo("<li style='color:darkred'>Could not insert card {$id} ({$card['name']}).</li>");
                         }
 
-                        $attachment_id = attachment_url_to_postid('cards/' . $_POST['version'] . '/' . $expansion_code . '/en/' . $id . '.png');
+                        $attachment_id = attachment_url_to_postid('cards/' . $_POST['version'] . '/' . $expansion_code . '/' . $_POST['lang'] . '/' . $id . '.png');
                         if ($attachment_id === 0) {
-                            $attachment_id = attachment_url_to_postid('cards/' . $_POST['version'] . '/' . $expansion_code . '/en/' . $id . '.jpg');
+                            $attachment_id = attachment_url_to_postid('cards/' . $_POST['version'] . '/' . $expansion_code . '/' . $_POST['lang'] . '/' . $id . '.jpg');
                         }
                         $formatted_cardtext = str_replace('\\"', '"',
                             str_replace('\\\'', '\'',
@@ -92,7 +93,7 @@ class Admin
                 <?php
                 unlink($uploaddir . $filename);
             } elseif (isset($_FILES['cdb'])) { //Select cards to import
-                $filename = $_POST['version'] . '_' . $_POST['expansion'] . '.cdb';
+                $filename = $_POST['version'] . '_' . $_POST['expansion'] . '_' . $_POST['lang'] . '.cdb';
 
                 if (move_uploaded_file($_FILES['cdb']['tmp_name'], $uploaddir . $filename)) {
                     try {
@@ -106,6 +107,7 @@ class Admin
                         <form method="POST">
                             <input type="hidden" name="version" value="<?= $_POST['version'] ?>"/>
                             <input type="hidden" name="expansion" value="<?= $_POST['expansion'] ?>"/>
+                            <input type="hidden" name="lang" value="<?= $_POST['lang'] ?>"/>
                             <?php
                             while ($card = $cards->fetchArray(SQLITE3_ASSOC)) {
                                 ?>
@@ -149,6 +151,11 @@ class Admin
                                         ?>
                                     </select>
                                 </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="t_lang"
+                                                       style="display:inline-block;width:16ch">Language</label></th>
+                                <td><input id="t_lang" name="lang" type="text" value="en" required/></td>
                             </tr>
                             <tr>
                                 <th scope="row"><label for="u_cdb" style="display:inline-block;width:16ch">CDB
