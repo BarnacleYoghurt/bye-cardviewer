@@ -23,12 +23,12 @@ export const edit = function ({attributes, setAttributes}) {
 
     function updateCardsList() {
         const versionParam = attributes.version
-            ? '?max_version=' + attributes.version
+            ? '&max_version=' + attributes.version
             : '';
         const langParam = attributes.language
-            ? '?lang=' + attributes.language
+            ? '&lang=' + attributes.language
             : '';
-        wp.apiFetch({path: 'bye/v1/cards/' + attributes.expansion + versionParam + langParam})
+        wp.apiFetch({path: 'bye/v1/cards/' + attributes.expansion + '?' + versionParam + langParam})
             .then(data => {
                 setCards(data.sort((a, b) => a.code - b.code));
             }, error => {
