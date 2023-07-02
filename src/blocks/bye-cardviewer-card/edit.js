@@ -1,5 +1,5 @@
 import {useBlockProps, InspectorControls} from '@wordpress/block-editor';
-import {PanelBody, ToggleControl, TextControl} from '@wordpress/components';
+import {PanelBody, ToggleControl, TextControl, SelectControl, Button} from '@wordpress/components';
 import {useState, useEffect} from '@wordpress/element';
 
 const _siteUrl = 'https://bye-project.xyz'; //better replace this with a get_site_url passed in from PHP
@@ -59,8 +59,8 @@ export const edit = function ({attributes, setAttributes}) {
         <InspectorControls>
             <PanelBody title={'Card Selection'} initialOpen={true}>
                 <fieldset>
-                    <legend>Card of the Day?</legend>
                     <ToggleControl {...{
+                        label: "Card of the Day?",
                         help: "Display random card of the day instead of a specific card",
                         checked: attributes.cardOfTheDay,
                         onChange: function(event) {
@@ -70,36 +70,30 @@ export const edit = function ({attributes, setAttributes}) {
                     </ToggleControl>
                 </fieldset>
                 <fieldset>
-                    <legend>Expansion</legend>
-                    <select {...{
+                    <SelectControl {...{
+                        label: "Expansion",
                         value: attributes.expansion,
+                        options: expansions.map((expansion) => ({value: expansion.code, label: expansion.name})),
                         disabled: (expansions.length === 0 || attributes.cardOfTheDay),
                         onChange: function (event) {
                             setAttributes({expansion: event.target.value})
                         }
-                    }}>
-                        {expansions.map((expansion) => {
-                            return <option {...{value: expansion.code}}>{expansion.name}</option>
-                        })}
-                    </select>
+                    }}/>
                 </fieldset>
                 <fieldset>
-                    <legend>Card</legend>
-                    <select {...{
+                    <SelectControl {...{
+                        label: "Card",
                         value: attributes.cardId,
                         disabled: (cards.length === 0 || attributes.cardOfTheDay),
+                        options: cards.map((card) => ({value: card.code, label: card.name})),
                         onChange: function (event) {
                             setAttributes({cardId: event.target.value})
                         }
-                    }}>
-                        {cards.map((card) => {
-                            return <option {...{value: card.code}}>{card.name}</option>
-                        })}
-                    </select>
+                    }}/>
                 </fieldset>
                 <fieldset>
-                    <legend>Max. Version</legend>
-                    <input {...{
+                    <TextControl {...{
+                        label: "Max. Version",
                         disabled:  attributes.cardOfTheDay,
                         value: attributes.version, onChange: function (event) {
                             setAttributes({version: event.target.value.trim().length > 0 ? event.target.value : null})
@@ -107,17 +101,21 @@ export const edit = function ({attributes, setAttributes}) {
                     }}/>
                 </fieldset>
                 <fieldset>
-                    <legend>Language</legend>
-                    <input {...{
+                    <TextControl {...{
+                        label: "Language",
                         value: attributes.language, onChange: function (event) {
                             setAttributes({language: event.target.value.trim().length > 0 ? event.target.value : null})
                         }
                     }}/>
                 </fieldset>
-                <button onClick={() => {
-                    updateExpansionsList();
-                    updateCardsList();
-                }}>Reload</button>
+                <Button {...{
+                    text: "Reload Lists",
+                    variant: "secondary",
+                    onClick: () => {
+                        updateExpansionsList();
+                        updateCardsList();
+                    }
+                }}/>
             </PanelBody>
             <PanelBody title={'URL Parameters'} initialOpen={false}>
                 <fieldset>
