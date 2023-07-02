@@ -75,8 +75,8 @@ export const edit = function ({attributes, setAttributes}) {
                         value: attributes.expansion,
                         options: expansions.map((expansion) => ({value: expansion.code, label: expansion.name})),
                         disabled: (expansions.length === 0 || attributes.cardOfTheDay),
-                        onChange: function (event) {
-                            setAttributes({expansion: event.target.value})
+                        onChange: function (value) {
+                            setAttributes({expansion: value})
                         }
                     }}/>
                 </fieldset>
@@ -86,8 +86,8 @@ export const edit = function ({attributes, setAttributes}) {
                         value: attributes.cardId,
                         disabled: (cards.length === 0 || attributes.cardOfTheDay),
                         options: cards.map((card) => ({value: card.code, label: card.name})),
-                        onChange: function (event) {
-                            setAttributes({cardId: event.target.value})
+                        onChange: function (value) {
+                            setAttributes({cardId: value})
                         }
                     }}/>
                 </fieldset>
@@ -95,16 +95,18 @@ export const edit = function ({attributes, setAttributes}) {
                     <TextControl {...{
                         label: "Max. Version",
                         disabled:  attributes.cardOfTheDay,
-                        value: attributes.version, onChange: function (event) {
-                            setAttributes({version: event.target.value.trim().length > 0 ? event.target.value : null})
+                        value: attributes.version,
+                        onChange: function (value) {
+                            setAttributes({version: value.trim().length > 0 ? value : null})
                         }
                     }}/>
                 </fieldset>
                 <fieldset>
                     <TextControl {...{
                         label: "Language",
-                        value: attributes.language, onChange: function (event) {
-                            setAttributes({language: event.target.value.trim().length > 0 ? event.target.value : null})
+                        value: attributes.language,
+                        onChange: function (value) {
+                            setAttributes({language: value.trim().length > 0 ? value : null})
                         }
                     }}/>
                 </fieldset>
