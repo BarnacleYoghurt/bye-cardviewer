@@ -1,5 +1,5 @@
 import {useBlockProps, InspectorControls} from '@wordpress/block-editor';
-import {PanelBody, ToggleControl} from '@wordpress/components';
+import {PanelBody, ToggleControl, TextControl} from '@wordpress/components';
 import {useState, useEffect} from '@wordpress/element';
 
 const _siteUrl = 'https://bye-project.xyz'; //better replace this with a get_site_url passed in from PHP
@@ -70,17 +70,6 @@ export const edit = function ({attributes, setAttributes}) {
                     </ToggleControl>
                 </fieldset>
                 <fieldset>
-                    <legend>From URL params?</legend>
-                    <ToggleControl {...{
-                        help: "Specify card to display in URL parameters",
-                        checked: attributes.fromUrlParams,
-                        onChange: function(event) {
-                            setAttributes({fromUrlParams: !attributes.fromUrlParams})
-                        }
-                    }}>
-                    </ToggleControl>
-                </fieldset>
-                <fieldset>
                     <legend>Expansion</legend>
                     <select {...{
                         value: attributes.expansion,
@@ -129,6 +118,35 @@ export const edit = function ({attributes, setAttributes}) {
                     updateExpansionsList();
                     updateCardsList();
                 }}>Reload</button>
+            </PanelBody>
+            <PanelBody title={'URL Parameters'} initialOpen={false}>
+                <fieldset>
+                    <ToggleControl {...{
+                        label: "From URL params?",
+                        help: "Specify card to display in URL parameters",
+                        checked: attributes.fromUrlParams,
+                        onChange: function(event) {
+                            setAttributes({fromUrlParams: !attributes.fromUrlParams})
+                        }
+                    }}>
+                    </ToggleControl>
+                    <TextControl {...{
+                        label: "Card ID param",
+                        help: "Name of (mandatory) card ID URL parameter",
+                        value: attributes.urlParamCardId,
+                        onChange: function (event) {
+                            setAttributes({urlParamCardId: event.target.value})
+                        }
+                    }}/>
+                    <TextControl {...{
+                        label: "Version param",
+                        help: "Name of (optional) max. version parameter",
+                        value: attributes.urlParamVersion,
+                        onChange: function (event) {
+                            setAttributes({urlParamVersion: event.target.value})
+                        }
+                    }}/>
+                </fieldset>
             </PanelBody>
         </InspectorControls>
         <img className="bye-card-image" src={imgUrl}

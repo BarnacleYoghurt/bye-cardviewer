@@ -28,6 +28,14 @@
     },
     "fromUrlParams": {
       "type": "boolean"
+    },
+    "urlParamCardId": {
+      "type": "string",
+      "default": "cardId"
+    },
+    "urlParamVersion": {
+      "type": "string",
+      "default": "version"
     }
   }
 }

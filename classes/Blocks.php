@@ -42,8 +42,9 @@ class Blocks
     {
         try {
             if (array_key_exists('fromUrlParams', $block_attributes) && $block_attributes['fromUrlParams']) {
-                $block_attributes['cardId'] = $_GET['cardId'] ?? $block_attributes['cardId'];
-                $block_attributes['version'] = $_GET['version'] ?? $block_attributes['version'];
+                //Note: Params like cardId[card1] won't work here because PHP is an array-expanding little shit
+                $block_attributes['cardId'] = $_GET[$block_attributes['urlParamCardId']] ?? $block_attributes['cardId'];
+                $block_attributes['version'] = $_GET[$block_attributes['urlParamVersion']] ?? $block_attributes['version'];
             }
             if (array_key_exists('cardOfTheDay', $block_attributes) && $block_attributes['cardOfTheDay']) {
                 $carddata  =  $this->database->find_card_ofTheDay($block_attributes['language'] ?? 'en');
