@@ -25,6 +25,9 @@
     },
     "cardOfTheDay": {
       "type": "boolean"
+    },
+    "fromUrlParams": {
+      "type": "boolean"
     }
   }
 }

@@ -70,6 +70,17 @@ export const edit = function ({attributes, setAttributes}) {
                     </ToggleControl>
                 </fieldset>
                 <fieldset>
+                    <legend>From URL params?</legend>
+                    <ToggleControl {...{
+                        help: "Specify card to display in URL parameters",
+                        checked: attributes.fromUrlParams,
+                        onChange: function(event) {
+                            setAttributes({fromUrlParams: !attributes.fromUrlParams})
+                        }
+                    }}>
+                    </ToggleControl>
+                </fieldset>
+                <fieldset>
                     <legend>Expansion</legend>
                     <select {...{
                         value: attributes.expansion,

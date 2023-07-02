@@ -41,6 +41,10 @@ class Blocks
     function bye_cardviewer_card_render($block_attributes, $content)
     {
         try {
+            if (array_key_exists('fromUrlParams', $block_attributes) && $block_attributes['fromUrlParams']) {
+                $block_attributes['cardId'] = $_GET['cardId'] ?? $block_attributes['cardId'];
+                $block_attributes['version'] = $_GET['version'] ?? $block_attributes['version'];
+            }
             if (array_key_exists('cardOfTheDay', $block_attributes) && $block_attributes['cardOfTheDay']) {
                 $carddata  =  $this->database->find_card_ofTheDay($block_attributes['language'] ?? 'en');
             }
