@@ -3,7 +3,7 @@
   &.compact {@content;}
 }
 
-.wp-block-bye-cardviewer-card {
+.wp-block-bye-cardviewer-card, .bye-cardlink>div {
   display: grid;
   background-color: rgba(0,0,0,0.3);
   color: #fff;
@@ -118,4 +118,20 @@
   color: #fff;
   padding: 20px;
   margin-bottom: 1em;
+}
+
+.bye-cardlink {
+  display: inline;
+
+  div {
+    display: none;
+  }
+
+  a:hover~div {
+    display: grid;
+    position: fixed;
+    top: 50px;
+    right: 50px;
+    width: 33%;
+  }
 }

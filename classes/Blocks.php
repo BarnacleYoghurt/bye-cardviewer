@@ -154,6 +154,12 @@ class Blocks
     function shortcode_cardlink($atts, $content) {
         $cardId = $atts['id'] ?? 0;
         $version = $atts['version'] ?? '99.99.99';
-        return sprintf('<a href="%s?cardId=%s&version=%s" target="_blank">%s</a>', get_option('cardviewer-page'), $cardId, $version, $content);
+        return sprintf('
+            <div class="bye-cardlink">
+                <a href="%s?cardId=%s&version=%s" target="_blank" title="Click to open card viewer">%s</a>
+                %s
+            </div>',
+            get_option('cardviewer-page'), $cardId, $version, $content,
+            $this->bye_cardviewer_card_render(['cardId' => $cardId, 'version' => $version],null));
     }
 }
