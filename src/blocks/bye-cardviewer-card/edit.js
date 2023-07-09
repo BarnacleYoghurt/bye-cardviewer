@@ -1,6 +1,7 @@
 import {useBlockProps, InspectorControls} from '@wordpress/block-editor';
 import {PanelBody, ToggleControl, TextControl, SelectControl, Button} from '@wordpress/components';
 import {useState, useEffect} from '@wordpress/element';
+import ServerSideRender from '@wordpress/server-side-render';
 
 const _siteUrl = 'https://bye-project.xyz'; //better replace this with a get_site_url passed in from PHP
 
@@ -42,18 +43,6 @@ export const edit = function ({attributes, setAttributes}) {
     useEffect(() => {
         updateCardsList();
     }, [attributes.expansion, attributes.version, attributes.language]);
-    useEffect(() => {
-        let _imgUrl = _siteUrl + '/wp-content/uploads/cards/' + selectedCard?.version + '/' + attributes.expansion + '/' + selectedCard?.lang + '/' + attributes.cardId + '.png';
-        let testImage = new Image();
-        testImage.onload = () => {
-            setImgUrl(_imgUrl);
-        }
-        testImage.onerror = () => {
-            setImgUrl(_imgUrl.substring(0, _imgUrl.length - 4) + '.jpg');
-        }
-        testImage.src = _imgUrl;
-
-    }, [attributes.expansion, attributes.cardId, attributes.version, attributes.language, cards])
 
     return <div {...blockProps}>
         <InspectorControls>
@@ -149,11 +138,6 @@ export const edit = function ({attributes, setAttributes}) {
                 </fieldset>
             </PanelBody>
         </InspectorControls>
-        <img className="bye-card-image" src={imgUrl}
-             alt="Preview Image"/>
-        <h2 className="bye-card-cardname">{selectedCard?.name ?? ''}</h2>
-        <p className="bye-card-cardtext">
-            <span>{selectedCard?.description ?? ''}</span>
-        </p>
+        <ServerSideRender block="bye-cardviewer/card" attributes={ attributes }/>
     </div>
 };
