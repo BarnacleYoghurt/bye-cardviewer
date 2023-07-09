@@ -38,6 +38,10 @@ class Blocks
         );
     }
 
+    function enqueue_cardlink_events() {
+        wp_enqueue_script('cardlink-events', plugin_dir_url(__FILE__) . '/../scripts/cardlink-events.js');
+    }
+
     function bye_cardviewer_card_render($block_attributes, $content)
     {
         try {
@@ -155,11 +159,11 @@ class Blocks
         $cardId = $atts['id'] ?? 0;
         $version = $atts['version'] ?? '99.99.99';
         return sprintf('
-            <div class="bye-cardlink">
-                <a href="%s?cardId=%s&version=%s" target="_blank" title="Click to open card viewer">%s</a>
+            <a href="%s?cardId=%s&version=%s" target="_blank" title="Click to open card viewer" 
+                data-cardid="%s" data-version="%s" 
+                onmouseenter="show_cardlink(event)" onmouseleave="hide_cardlink(event)">
                 %s
-            </div>',
-            get_option('cardviewer-page'), $cardId, $version, $content,
-            $this->bye_cardviewer_card_render(['cardId' => $cardId, 'version' => $version],null));
+            </a>',
+            get_option('cardviewer-page'), $cardId, $version, $cardId, $version, $content);
     }
 }

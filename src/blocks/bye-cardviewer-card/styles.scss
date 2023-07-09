@@ -3,7 +3,7 @@
   &.compact {@content;}
 }
 
-.wp-block-bye-cardviewer-card:not(.block-editor-block-list__block), .bye-cardlink>div {
+.wp-block-bye-cardviewer-card:not(.block-editor-block-list__block) {
   display: grid;
   background-color: rgba(0,0,0,0.3);
   color: #fff;
@@ -13,6 +13,14 @@
   column-gap: 20px;
   height: auto;
   margin-bottom: 1em;
+
+  &.bye-card-tooltip {
+    position: fixed;
+    top: 50px;
+    left: 50px;
+    width: 33%;
+    background-color: rgba(0,0,0,0.9);
+  }
 
   .bye-card-image {
     grid-row: 1 / span 4;
@@ -118,20 +126,4 @@
   color: #fff;
   padding: 20px;
   margin-bottom: 1em;
-}
-
-.bye-cardlink {
-  display: inline;
-
-  div {
-    display: none;
-  }
-
-  a:hover~div {
-    display: grid;
-    position: fixed;
-    top: 50px;
-    right: 50px;
-    width: 33%;
-  }
 }
