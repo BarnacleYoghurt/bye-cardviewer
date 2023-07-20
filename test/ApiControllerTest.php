@@ -45,4 +45,14 @@ class ApiControllerTest extends WP_UnitTestCase
         $this->assertEquals(200, $response->get_status());
         $this->assertEquals($fake_cards, $response->get_data());
     }
+
+    public function testGetCardOfTheDayReturnsCardOfTheDay()
+    {
+        $fake_cotd = 'I AM THE CARD OF THE DAY!';
+        $this->dbStub->method('find_card_ofTheDay')->willReturn($fake_cotd);
+
+        $response = $this->classInstance->get_cardoftheday(null);
+        $this->assertEquals(200, $response->get_status());
+        $this->assertEquals($fake_cotd, $response->get_data());
+    }
 }
