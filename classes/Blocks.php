@@ -39,7 +39,7 @@ class Blocks
     }
 
     function enqueue_cardlink_events() {
-        wp_enqueue_script('cardlink-events', plugin_dir_url(__FILE__) . '/../scripts/cardlink-events.js');
+        wp_enqueue_script('cardlink-events', plugin_dir_url(__FILE__) . '../scripts/cardlink-events.js');
     }
 
     function bye_cardviewer_card_render($block_attributes, $content)
