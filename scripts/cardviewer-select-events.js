@@ -9,7 +9,7 @@ function update_cardviewer_cardlist(event) {
             jQuery(`#c_card-${blockId}`).empty()
                 .append(
                     res.sort((a, b) => a.code - b.code)
-                       .map((c) => `<option value=${c.code}">${c.name}</option>`)
+                       .map((c) => `<option value="${c.code}">${c.name}</option>`)
                 )
                 .trigger('change');
         })
@@ -22,8 +22,9 @@ function update_cardviewer_cardlist(event) {
 
 function update_cardviewer_card(event) {
     const blockId = event.target.id.split('-')[1];
+    const cardId = event.target.options[event.target.selectedIndex].value;
     jQuery(`#bye-cardviewer-card-${blockId}`).css('pointer-events','none');
-    jQuery.get(`/wp-json/bye/v1/cardblock-renderer?cardId=${event.target.options[event.target.selectedIndex].value}&selectable=1&blockId=${blockId}`)
+    jQuery.get(`/wp-json/bye/v1/cardblock-renderer?cardId=${cardId}&selectable=1&blockId=${blockId}`)
         .done((res) => {
             jQuery(`#bye-cardviewer-card-${blockId}`).replaceWith(res.rendered);
             jQuery(`#c_card-${blockId}`).focus(); // Refocus so we can scroll with arrow keys uninterrupted

@@ -52,17 +52,17 @@ class Blocks
             /*
              * TODO: Add an optional frontend card selection for use in the card viewer
              * > Card (Expansion + Name)/Version/Language dropdowns can be toggled separately in block config
-             * >> Expansion has fixed options
-             * >> Name has cards in expansion
+             * >> Expansion has fixed options [DONE]
+             * >> Name has cards in expansion [DONE]
              * >> Version only what exists for this card (or arbitrary max?)
              * >> Language only what exists for this card
-             * > The actual card displayed is the first of the following that applies
+             * > The actual card displayed is the first of the following that applies [DONE]
              * >> 1) The card selected in the dropdowns
              * >> 2) The card given in the URL parameters
              * >> 3) The card of the day (if enabled) => this allows us to use the generic card viewer as CotD!
              * >> 4) The card configured in the backend
              * > If dropdowns are present AND an initial card is present (via methods 2/3/4),
-             *   the dropdown values are also initialized appropriately
+             *   the dropdown values are also initialized appropriately [DONE]
              * > If the displayed card is card of the day, regardless of the method it was selected by,
              *   display "🎉 Card of the Day!" (or similar) somewhere
              */
@@ -72,13 +72,19 @@ class Blocks
                 //Note: Params like cardId[card1] won't work here because PHP is an array-expanding little shit
                 $block_attributes['cardId'] = $_GET[$block_attributes['urlParamCardId']] ?? $block_attributes['cardId'];
                 $block_attributes['version'] = $_GET[$block_attributes['urlParamVersion']] ?? $block_attributes['version'];
+                if ($_GET[$block_attributes['urlParamCardId']] ?? false) { // URL specifies card, prioritize over CotD
+                    $carddata = $this->database->find_card($block_attributes['cardId'], $block_attributes['version'] ?? '99.99.99',
+                        $block_attributes['language'] ?? 'en');
+                } // otherwise we just proceed with the overridden auxiliary attributes
             }
-            if (array_key_exists('cardOfTheDay', $block_attributes) && $block_attributes['cardOfTheDay']) {
-                $carddata  =  $this->database->find_card_ofTheDay($block_attributes['language'] ?? 'en');
-            }
-            else {
-                $carddata = $this->database->find_card($block_attributes['cardId'], $block_attributes['version'] ?? '99.99.99',
-                    $block_attributes['language'] ?? 'en');
+            if (!isset($carddata)) { // If card isn't given by URL, first try CotD and only then the static config
+                if (array_key_exists('cardOfTheDay', $block_attributes) && $block_attributes['cardOfTheDay']) {
+                    $carddata = $this->database->find_card_ofTheDay($block_attributes['language'] ?? 'en');
+                }
+                else {
+                    $carddata = $this->database->find_card($block_attributes['cardId'], $block_attributes['version'] ?? '99.99.99',
+                        $block_attributes['language'] ?? 'en');
+                }
             }
             $expansion = $this->database->get_expansion($carddata->getExpansionId());
             $image_url = '/cards/' . $carddata->getVersion() . '/' . $expansion->code . '/' . $carddata->getLang() . '/' . $carddata->getCode() . '.png';
