@@ -20,12 +20,6 @@ class Admin
 
         add_options_page('BYE Settings', 'BYE Settings', 'manage_options', 'bye-settings', array($this, 'admin_page_settings'));
         add_settings_section('pages','Special Pages',function(){},'bye-settings');
-        register_setting('bye-settings', 'cotd-page', array(
-            'type' => 'string',
-            'description' => 'Card of the Day Page',
-            'default' => '#'
-        ));
-        add_settings_field('cotd-page', 'Card of the Day Page', array($this, 'admin_field_cotdPage'), 'bye-settings', 'pages');
         register_setting('bye-settings', 'cardviewer-page', array(
             'type' => 'string',
             'description' => 'Card Viewer Page',
@@ -258,14 +252,6 @@ class Admin
             </div>
             <?php
         }
-    }
-
-    function admin_field_cotdPage($args)
-    {
-        $cotdPage = get_option('cotd-page');
-        ?>
-        <input name="cotd-page" value="<?php echo $cotdPage ?>"/>
-        <?php
     }
 
     function admin_field_cardViewerPage($args)
