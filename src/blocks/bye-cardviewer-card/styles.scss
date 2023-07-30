@@ -26,7 +26,8 @@
     grid-row: 1;
     grid-column: 1 / span 2;
     display: flex;
-    column-gap: 1em;
+    flex-flow: row wrap;
+    gap: 1em;
     margin-bottom: 1em;
   }
 
