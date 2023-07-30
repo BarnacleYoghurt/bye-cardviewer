@@ -1,7 +1,7 @@
 {
   "name": "bye-cardviewer/card",
   "apiVersion": 2,
-  "version": "0.0.7",
+  "version": "0.1.1",
   "title": "BYE Card",
   "editorScript": "file:./index.js",
   "style": "file:./styles.css",
@@ -36,6 +36,9 @@
     "urlParamVersion": {
       "type": "string",
       "default": "version"
+    },
+    "selectable": {
+      "type": "boolean"
     }
   }
 }

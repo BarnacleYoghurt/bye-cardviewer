@@ -42,6 +42,10 @@ class Blocks
         wp_enqueue_script('cardlink-events', plugin_dir_url(__FILE__) . '../scripts/cardlink-events.js');
     }
 
+    function enqueue_cardviewer_select_events() {
+        wp_enqueue_script('cardviewer-select-events', plugin_dir_url(__FILE__) . '../scripts/cardviewer-select-events.js');
+    }
+
     function bye_cardviewer_card_render($block_attributes, $content)
     {
         try {
@@ -63,6 +67,7 @@ class Blocks
              *   display "🎉 Card of the Day!" (or similar) somewhere
              */
 
+            $wrapper_attr = [];
             if (array_key_exists('fromUrlParams', $block_attributes) && $block_attributes['fromUrlParams']) {
                 //Note: Params like cardId[card1] won't work here because PHP is an array-expanding little shit
                 $block_attributes['cardId'] = $_GET[$block_attributes['urlParamCardId']] ?? $block_attributes['cardId'];
@@ -82,15 +87,61 @@ class Blocks
             }
             $image_url = wp_upload_dir()['baseurl'] . $image_url;
 
-            $el_img = sprintf('<a class="bye-card-image" href="%s"><img src="%s"/></a>', $image_url, $image_url);
+            if (array_key_exists('selectable', $block_attributes) && $block_attributes['selectable']) {
+                // The controls need to know which block to update if we have multiple, so an ID is needed
+                // Secret blockId param allows retaining same id when reloading a block
+                $block_id = array_key_exists('blockId', $block_attributes) ? $block_attributes['blockId']
+                    : uniqid(); // This is based on the microsecond and hopefully unique enough for this purpose
+
+                $opt_expansions = array_map(
+                    function($exp) use ($carddata) {
+                        return sprintf('<option value="%s" %s>%s</option>',
+                            $exp->code, $exp->id == $carddata->getExpansionId() ? 'selected' : '', $exp->name);
+                    }, $this->database->all_expansions());
+                $cards = $this->database->all_cards_in_expansion($expansion->code); // need this because usort is in-place
+                usort ($cards, function ($c1,$c2) { return $c1->code - $c2->code; });
+                $opt_cards = array_map(
+                    function($c) use ($carddata) {
+                        return sprintf('<option value="%s" %s>%s</option>',
+                            $c->code, $c->code == $carddata->getCode() ? 'selected' : '', $c->name);
+                    }, $cards);
+                //TODO: Populating version and language requires a way to get versions/languages available for a given card
+
+                $el_select_expansions = sprintf(
+                        '<select autocomplete="off" 
+                                onchange="update_cardviewer_cardlist(event)" 
+                                id="c_expansion-%s">
+                                %s
+                        </select>',$block_id,implode('',$opt_expansions));
+                $el_select_card = sprintf(
+                            '<select autocomplete="off"
+                                    onchange="update_cardviewer_card(event)" 
+                                    id="c_card-%s">
+                                    %s
+                            </select>',$block_id,implode('',$opt_cards));
+                //$el_select_version = '<label for="c_version">Version: </label><select autocomplete="off" id="c_version"></select>';
+                //$el_select_lang = '<label for="c_lang">Language:</label><select autocomplete="off" id="c_lang"></select>';
+                $el_select = sprintf('<div class="bye-card-select">%s%s%s%s</div>',
+                    $el_select_expansions,$el_select_card,'',''/*$el_select_version,$el_select_lang*/);
+                $wrapper_attr += [ 'id' => sprintf('bye-cardviewer-card-%s', $block_id) ];
+            }
+            else {
+                $el_select = '';
+            }
+            // In some cases such as dynamic block rendering via API, the lightbox plugin cannot attach to the link
+            // Open in new tab for those cases, still better than navigating away from the current page
+            // TODO: Look into a lightbox plugin that can attach to dynamic content as well!
+            $el_img = sprintf('<a class="bye-card-image" target="_blank" href="%s"><img src="%s"/></a>',
+                $image_url, $image_url);
+
             $el_cardname = sprintf('<h3 class="bye-card-cardname">%s</h3>', $carddata->getName());
             $el_cardtype = sprintf('<span class="bye-card-cardtype">%s</span>', $carddata->getTypeName());
             $el_cardstats = sprintf('<span class="bye-card-cardstats">%s</span>', $this->format_cardstats($carddata));
             $el_cardtext = sprintf('<p class="bye-card-cardtext"><span>%s</span></p>', $this->format_cardtext($carddata->getDescription()));
             $el_metadata = sprintf('<span class="bye-card-meta">%s (v%s)</span>', $expansion->name, $carddata->getVersion());
 
-            return sprintf('<div %s>%s%s%s%s%s%s</div>', get_block_wrapper_attributes(),
-                $el_img, $el_cardname, $el_cardtype, $el_cardstats, $el_cardtext, $el_metadata);
+            return sprintf('<div %s>%s%s%s%s%s%s%s</div>', get_block_wrapper_attributes($wrapper_attr),
+                $el_select, $el_img, $el_cardname, $el_cardtype, $el_cardstats, $el_cardtext, $el_metadata);
         } catch (DBException $e) {
             return sprintf('<div class="bye-card-error">
                                         <h3>Cardviewer Error!</h3>

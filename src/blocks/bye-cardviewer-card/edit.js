@@ -137,6 +137,19 @@ export const edit = function ({attributes, setAttributes}) {
                     }}/>
                 </fieldset>
             </PanelBody>
+            <PanelBody title={'Frontend Selection'} initialOpen={false}>
+                <fieldset>
+                    <ToggleControl {...{
+                        label: "Allow card selection in frontend?",
+                        help: "Include frontend controls to let the user change the displayed card.",
+                        checked: attributes.selectable,
+                        onChange: function(event) {
+                            setAttributes({selectable: !attributes.selectable})
+                        }
+                    }}>
+                    </ToggleControl>
+                </fieldset>
+            </PanelBody>
         </InspectorControls>
         <ServerSideRender block="bye-cardviewer/card" attributes={ attributes }/>
     </div>
