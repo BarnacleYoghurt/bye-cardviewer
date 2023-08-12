@@ -142,9 +142,27 @@ export const edit = function ({attributes, setAttributes}) {
                     <ToggleControl {...{
                         label: "Allow card selection in frontend?",
                         help: "Include frontend controls to let the user change the displayed card.",
-                        checked: attributes.selectable,
+                        checked: attributes.selectableCard,
                         onChange: function(event) {
-                            setAttributes({selectable: !attributes.selectable})
+                            setAttributes({selectableCard: !attributes.selectableCard})
+                        }
+                    }}>
+                    </ToggleControl>
+                    <ToggleControl {...{
+                        label: "Version selection",
+                        help: "Let the user switch between different versions of the displayed card.",
+                        checked: attributes.selectableVersion,
+                        onChange: function(event) {
+                            setAttributes({selectableVersion: !attributes.selectableVersion})
+                        }
+                    }}>
+                    </ToggleControl>
+                    <ToggleControl {...{
+                        label: "Language selection",
+                        help: "Let the user select the language of the displayed card.",
+                        checked: attributes.selectableLanguage,
+                        onChange: function(event) {
+                            setAttributes({selectableLanguage: !attributes.selectableLanguage})
                         }
                     }}>
                     </ToggleControl>

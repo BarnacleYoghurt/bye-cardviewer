@@ -93,42 +93,83 @@ class Blocks
             }
             $image_url = wp_upload_dir()['baseurl'] . $image_url;
 
-            if (array_key_exists('selectable', $block_attributes) && $block_attributes['selectable']) {
+            if (
+                (array_key_exists('selectableCard', $block_attributes) && $block_attributes['selectableCard']) ||
+                (array_key_exists('selectableVersion', $block_attributes) && $block_attributes['selectableVersion']) ||
+                (array_key_exists('selectableLanguage', $block_attributes) && $block_attributes['selectableLanguage'])
+            ) {
                 // The controls need to know which block to update if we have multiple, so an ID is needed
                 // Secret blockId param allows retaining same id when reloading a block
                 $block_id = array_key_exists('blockId', $block_attributes) ? $block_attributes['blockId']
                     : uniqid(); // This is based on the microsecond and hopefully unique enough for this purpose
 
-                $opt_expansions = array_map(
-                    function($exp) use ($carddata) {
-                        return sprintf('<option value="%s" %s>%s</option>',
-                            $exp->code, $exp->id == $carddata->getExpansionId() ? 'selected' : '', $exp->name);
-                    }, $this->database->all_expansions());
-                $cards = $this->database->all_cards_in_expansion($expansion->code); // need this because usort is in-place
-                usort ($cards, function ($c1,$c2) { return $c1->code - $c2->code; });
-                $opt_cards = array_map(
-                    function($c) use ($carddata) {
-                        return sprintf('<option value="%s" %s>%s</option>',
-                            $c->code, $c->code == $carddata->getCode() ? 'selected' : '', $c->name);
-                    }, $cards);
-                //TODO: Populating version and language requires a way to get versions/languages available for a given card
+                $el_select_expansions = '';
+                $el_select_card = '';
+                $el_select_version = '';
+                $el_select_language = '';
 
-                $el_select_expansions = sprintf(
+                if (array_key_exists('selectableCard', $block_attributes) && $block_attributes['selectableCard']) {
+                    $opt_expansions = array_map(
+                        function ($exp) use ($carddata) {
+                            return sprintf('<option value="%s" %s>%s</option>',
+                                $exp->code, $exp->id == $carddata->getExpansionId() ? 'selected' : '', $exp->name);
+                        }, $this->database->all_expansions());
+                    $cards = $this->database->all_cards_in_expansion($expansion->code); // need this because usort is in-place
+                    usort($cards, function ($c1, $c2) {
+                        return $c1->code - $c2->code;
+                    });
+                    $opt_cards = array_map(
+                        function ($c) use ($carddata) {
+                            return sprintf('<option value="%s" %s>%s</option>',
+                                $c->code, $c->code == $carddata->getCode() ? 'selected' : '', $c->name);
+                        }, $cards);
+                    //TODO: Populating version and language requires a way to get versions/languages available for a given card
+
+                    $el_select_expansions = sprintf(
                         '<select autocomplete="off" 
                                 onchange="update_cardviewer_cardlist(event)" 
-                                id="c_expansion-%s">
+                                id="c_expansion-%s"
+                                title="Expansion">
                                 %s
-                        </select>',$block_id,implode('',$opt_expansions));
-                $el_select_card = sprintf(
-                            '<select autocomplete="off"
+                        </select>', $block_id, implode('', $opt_expansions));
+                    $el_select_card = sprintf(
+                        '<select autocomplete="off"
                                     onchange="update_cardviewer_card(event)" 
-                                    id="c_card-%s">
+                                    id="c_card-%s"
+                                    title="Card">
                                     %s
-                            </select>',$block_id,implode('',$opt_cards));
-                //$el_select_version = '<label for="c_version">Version: </label><select autocomplete="off" id="c_version"></select>';
-                //$el_select_lang = '<label for="c_lang">Language:</label><select autocomplete="off" id="c_lang"></select>';
+                            </select>', $block_id, implode('', $opt_cards));
+                }
+                if (array_key_exists('selectableVersion', $block_attributes) && $block_attributes['selectableVersion']) {
+                    $opt_versions = array_map(
+                        function ($v) use ($carddata) {
+                            return sprintf('<option value="%s" %s>%s</option>',
+                                $v, $v == $carddata->getVersion() ? 'selected' : '', $v);
+                        },$this->database->all_versionsOfCard($carddata->getCode(), $carddata->getLang()));
+                    $el_select_version = sprintf(
+                        '<select autocomplete="off"
+                                    onchange="update_cardviewer_card(event)"
+                                    id="c_version-%s"
+                                    title="Version">
+                                    %s
+                          </select>', $block_id, implode('',$opt_versions));
+                }
+                if (array_key_exists('selectableLanguage', $block_attributes) && $block_attributes['selectableLanguage']) {
+                    $opt_lang = array_map(
+                        function ($l) use ($carddata) {
+                            return sprintf('<option value="%s" %s>%s</option>',
+                                $l, $l == $carddata->getLang() ? 'selected' : '', $l);
+                        },$this->database->all_languagesOfCard($carddata->getCode(), $carddata->getVersion()));
+                    $el_select_lang = sprintf(
+                        '<select autocomplete="off"
+                                    onchange="update_cardviewer_card(event)"
+                                    id="c_lang-%s"
+                                    title="Language">
+                                    %s
+                          </select>', $block_id, implode('',$opt_lang));
+                }
                 $el_select = sprintf('<div class="bye-card-select">%s%s%s%s</div>',
-                    $el_select_expansions,$el_select_card,'',''/*$el_select_version,$el_select_lang*/);
+                $el_select_expansions,$el_select_card,$el_select_version,$el_select_lang);
                 $wrapper_attr += [ 'id' => sprintf('bye-cardviewer-card-%s', $block_id) ];
             }
             else {
@@ -146,8 +187,8 @@ class Blocks
             $el_cardtext = sprintf('<p class="bye-card-cardtext"><span>%s</span></p>', $this->format_cardtext($carddata->getDescription()));
             $el_metadata = sprintf('<span class="bye-card-meta">%s (v%s)</span>', $expansion->name, $carddata->getVersion());
 
-            return sprintf('<div %s>%s%s%s%s%s%s%s</div>', get_block_wrapper_attributes($wrapper_attr),
-                $el_select, $el_img, $el_cardname, $el_cardtype, $el_cardstats, $el_cardtext, $el_metadata);
+            return sprintf('<div %s data-cardid="%s">%s%s%s%s%s%s%s</div>', get_block_wrapper_attributes($wrapper_attr),
+                $carddata->getCode(), $el_select, $el_img, $el_cardname, $el_cardtype, $el_cardstats, $el_cardtext, $el_metadata);
         } catch (DBException $e) {
             return sprintf('<div class="bye-card-error">
                                         <h3>Cardviewer Error!</h3>
