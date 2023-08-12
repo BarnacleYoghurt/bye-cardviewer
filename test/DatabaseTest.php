@@ -74,6 +74,16 @@ class DatabaseTest extends WP_UnitTestCase
             'lang' => 'de',
             'name' => 'Testzauber'
         ));
+        $wpdb->insert($this->classInstance->table_cards(), array(
+            'code' => 2,
+            'expansion_id' => $tost_exp_id,
+            'version' => '000000',
+            'type' => CardInfo::TYPE_SPELL
+        ));
+        $wpdb->insert($this->classInstance->table_cardtexts(), array(
+            'card_id' => $wpdb->insert_id,
+            'name' => 'Test Spell v0'
+        ));
     }
 
     public function tearDown(): void
@@ -133,6 +143,64 @@ class DatabaseTest extends WP_UnitTestCase
         $cards = $this->classInstance->all_cards_in_expansion('vwxy');
 
         $this->assertEquals(0, count($cards));
+    }
+
+    public function testAllVersionsOfCardContainsCorrectVersions() {
+        $versions = $this->classInstance->all_versionsOfCard(2);
+
+        $this->assertEquals(2, count($versions));
+        $this->assertContains('0.0.0', $versions);
+        $this->assertContains('0.0.1', $versions);
+    }
+
+    public function testAllVersionsOfCardContainsOnlyVersionsWithMatchingLanguage() {
+        $versions = $this->classInstance->all_versionsOfCard(2, 'de');
+
+        $this->assertEquals(1, count($versions));
+        $this->assertContains('0.0.1', $versions);
+    }
+
+    public function testAllVersionsOfCardEmptyForInvalidCard()
+    {
+        $versions = $this->classInstance->all_versionsOfCard(99);
+
+        $this->assertEquals(0, count($versions));
+    }
+
+    public function testAllVersionsOfCardEmptyForInvalidLanguage()
+    {
+        $versions = $this->classInstance->all_versionsOfCard(2, 'es');
+
+        $this->assertEquals(0, count($versions));
+    }
+
+    public function testAllLanguagesOfCardContainsCorrectLanguages() {
+        $langs = $this->classInstance->all_languagesOfCard(2);
+
+        $this->assertEquals(2, count($langs));
+        $this->assertContains('de', $langs);
+        $this->assertContains('en', $langs);
+    }
+
+    public function testAllLanguagesOfCardContainsOnlyLanguagesWithMatchingVersion() {
+        $langs = $this->classInstance->all_languagesOfCard(2, '0.0.0');
+
+        $this->assertEquals(1, count($langs));
+        $this->assertContains('en', $langs);
+    }
+
+    public function testAllLanguagesOfCardEmptyForInvalidCard()
+    {
+        $langs = $this->classInstance->all_languagesOfCard(99);
+
+        $this->assertEquals(0, count($langs));
+    }
+
+    public function testAllLanguagesOfCardEmptyForInvalidVersion()
+    {
+        $langs = $this->classInstance->all_languagesOfCard(2, '7.7.7');
+
+        $this->assertEquals(0, count($langs));
     }
 
     public function testFindCardWithCodeAndExactVersionReturnsCorrectCard()
