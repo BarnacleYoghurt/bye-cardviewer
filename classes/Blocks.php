@@ -54,8 +54,8 @@ class Blocks
              * > Card (Expansion + Name)/Version/Language dropdowns can be toggled separately in block config
              * >> Expansion has fixed options [DONE]
              * >> Name has cards in expansion [DONE]
-             * >> Version only what exists for this card (or arbitrary max?)
-             * >> Language only what exists for this card
+             * >> Version only what exists for this card [DONE]
+             * >> Language only what exists for this card [DONE]
              * > The actual card displayed is the first of the following that applies [DONE]
              * >> 1) The card selected in the dropdowns
              * >> 2) The card given in the URL parameters
@@ -64,10 +64,11 @@ class Blocks
              * > If dropdowns are present AND an initial card is present (via methods 2/3/4),
              *   the dropdown values are also initialized appropriately [DONE]
              * > If the displayed card is card of the day, regardless of the method it was selected by,
-             *   display "🎉 Card of the Day!" (or similar) somewhere
+             *   display "🎉 Card of the Day!" (or similar) somewhere [DONE]
              */
 
             $wrapper_attr = [];
+            $cotd = $this->database->find_card_ofTheDay($block_attributes['language'] ?? 'en');
             if (array_key_exists('fromUrlParams', $block_attributes) && $block_attributes['fromUrlParams']) {
                 //Note: Params like cardId[card1] won't work here because PHP is an array-expanding little shit
                 $block_attributes['cardId'] = $_GET[$block_attributes['urlParamCardId']] ?? $block_attributes['cardId'];
@@ -79,7 +80,7 @@ class Blocks
             }
             if (!isset($carddata)) { // If card isn't given by URL, first try CotD and only then the static config
                 if (array_key_exists('cardOfTheDay', $block_attributes) && $block_attributes['cardOfTheDay']) {
-                    $carddata = $this->database->find_card_ofTheDay($block_attributes['language'] ?? 'en');
+                    $carddata = $cotd;
                 }
                 else {
                     $carddata = $this->database->find_card($block_attributes['cardId'], $block_attributes['version'] ?? '99.99.99',
@@ -106,7 +107,7 @@ class Blocks
                 $el_select_expansions = '';
                 $el_select_card = '';
                 $el_select_version = '';
-                $el_select_language = '';
+                $el_select_lang = '';
 
                 if (array_key_exists('selectableCard', $block_attributes) && $block_attributes['selectableCard']) {
                     $opt_expansions = array_map(
@@ -123,7 +124,6 @@ class Blocks
                             return sprintf('<option value="%s" %s>%s</option>',
                                 $c->code, $c->code == $carddata->getCode() ? 'selected' : '', $c->name);
                         }, $cards);
-                    //TODO: Populating version and language requires a way to get versions/languages available for a given card
 
                     $el_select_expansions = sprintf(
                         '<select autocomplete="off" 
@@ -181,14 +181,20 @@ class Blocks
             $el_img = sprintf('<a class="bye-card-image" target="_blank" href="%s"><img src="%s"/></a>',
                 $image_url, $image_url);
 
+            if ($cotd && ($cotd->getCode() == $carddata->getCode())) {
+                $el_congrats = '<span class="bye-card-cotd-marker" title="You\'ve found the card of the day!">🎉</span>';
+            } else {
+                $el_congrats = '';
+            }
             $el_cardname = sprintf('<h3 class="bye-card-cardname">%s</h3>', $carddata->getName());
             $el_cardtype = sprintf('<span class="bye-card-cardtype">%s</span>', $carddata->getTypeName());
             $el_cardstats = sprintf('<span class="bye-card-cardstats">%s</span>', $this->format_cardstats($carddata));
             $el_cardtext = sprintf('<p class="bye-card-cardtext"><span>%s</span></p>', $this->format_cardtext($carddata->getDescription()));
             $el_metadata = sprintf('<span class="bye-card-meta">%s (v%s)</span>', $expansion->name, $carddata->getVersion());
 
-            return sprintf('<div %s data-cardid="%s">%s%s%s%s%s%s%s</div>', get_block_wrapper_attributes($wrapper_attr),
-                $carddata->getCode(), $el_select, $el_img, $el_cardname, $el_cardtype, $el_cardstats, $el_cardtext, $el_metadata);
+            return sprintf('<div %s data-cardid="%s">%s%s%s%s%s%s%s%s</div>', get_block_wrapper_attributes($wrapper_attr),
+                $carddata->getCode(), $el_select, $el_img, $el_cardname, $el_cardtype, $el_cardstats, $el_cardtext,
+                $el_metadata, $el_congrats);
         } catch (DBException $e) {
             return sprintf('<div class="bye-card-error">
                                         <h3>Cardviewer Error!</h3>
