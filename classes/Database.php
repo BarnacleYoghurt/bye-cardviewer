@@ -111,25 +111,25 @@ class Database
 
     public function all_versionsOfCard($code, $lang = 'en') {
         global $wpdb;
-        $result = $wpdb->get_results($wpdb->prepare("SELECT DISTINCT c.version FROM {$this->table_cards()} c
+        $result = $wpdb->get_results($wpdb->prepare("SELECT c.*, t.* FROM {$this->table_cards()} c
                                                     JOIN {$this->table_cardtexts()} t ON c.id = t.card_id
                                                     WHERE c.code = %s AND t.lang = %s", $code, $lang));
-        return array_map(function($v) { return $this->decanonicalize_version_string($v->version); }, $result);
+        foreach ($result as $card) {
+            $card->version = $this->decanonicalize_version_string($card->version);
+        }
+        return $result;
     }
 
-    public function all_languagesOfCard($code, $exact_version = null) {
+    public function all_languagesOfCard($code, $exact_version) {
         global $wpdb;
-        if ($exact_version) {
-            $canonical_version = $this->canonicalize_version_string($exact_version);
-            $result = $wpdb->get_results($wpdb->prepare("SELECT DISTINCT t.lang FROM {$this->table_cards()} c
-                                                    JOIN {$this->table_cardtexts()} t ON c.id = t.card_id
-                                                    WHERE c.code = %s AND c.version = %s", $code, $canonical_version));
-        } else {
-            $result = $wpdb->get_results($wpdb->prepare("SELECT DISTINCT t.lang FROM {$this->table_cards()} c
-                                                    JOIN {$this->table_cardtexts()} t ON c.id = t.card_id
-                                                    WHERE c.code = %s", $code));
+        $canonical_version = $this->canonicalize_version_string($exact_version);
+        $result = $wpdb->get_results($wpdb->prepare("SELECT c.*, t.* FROM {$this->table_cards()} c
+                                                JOIN {$this->table_cardtexts()} t ON c.id = t.card_id
+                                                WHERE c.code = %s AND c.version = %s", $code, $canonical_version));
+        foreach ($result as $card) {
+            $card->version = $this->decanonicalize_version_string($card->version);
         }
-        return array_map(function($l) { return $l->lang; }, $result);
+        return $result;
     }
 
     public function all_cards_in_expansion($expansion_code, $max_version = '99.99.99', $lang = 'en')

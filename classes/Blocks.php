@@ -142,7 +142,8 @@ class Blocks
                 }
                 if (array_key_exists('selectableVersion', $block_attributes) && $block_attributes['selectableVersion']) {
                     $opt_versions = array_map(
-                        function ($v) use ($carddata) {
+                        function ($c) use ($carddata) {
+                            $v = $c->version;
                             return sprintf('<option value="%s" %s>%s</option>',
                                 $v, $v == $carddata->getVersion() ? 'selected' : '', $v);
                         },$this->database->all_versionsOfCard($carddata->getCode(), $carddata->getLang()));
@@ -156,7 +157,8 @@ class Blocks
                 }
                 if (array_key_exists('selectableLanguage', $block_attributes) && $block_attributes['selectableLanguage']) {
                     $opt_lang = array_map(
-                        function ($l) use ($carddata) {
+                        function ($c) use ($carddata) {
+                            $l = $c->lang;
                             return sprintf('<option value="%s" %s>%s</option>',
                                 $l, $l == $carddata->getLang() ? 'selected' : '', $l);
                         },$this->database->all_languagesOfCard($carddata->getCode(), $carddata->getVersion()));
@@ -169,7 +171,7 @@ class Blocks
                           </select>', $block_id, implode('',$opt_lang));
                 }
                 $el_select = sprintf('<div class="bye-card-select">%s%s%s%s</div>',
-                $el_select_expansions,$el_select_card,$el_select_version,$el_select_lang);
+                    $el_select_expansions,$el_select_card,$el_select_version,$el_select_lang);
                 $wrapper_attr += [ 'id' => sprintf('bye-cardviewer-card-%s', $block_id) ];
             }
             else {

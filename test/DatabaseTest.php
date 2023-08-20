@@ -149,15 +149,15 @@ class DatabaseTest extends WP_UnitTestCase
         $versions = $this->classInstance->all_versionsOfCard(2);
 
         $this->assertEquals(2, count($versions));
-        $this->assertContains('0.0.0', $versions);
-        $this->assertContains('0.0.1', $versions);
+        $this->assertArrayHasKey('0.0.0', array_column($versions, null, 'version'));
+        $this->assertArrayHasKey('0.0.1', array_column($versions, null, 'version'));
     }
 
     public function testAllVersionsOfCardContainsOnlyVersionsWithMatchingLanguage() {
         $versions = $this->classInstance->all_versionsOfCard(2, 'de');
 
         $this->assertEquals(1, count($versions));
-        $this->assertContains('0.0.1', $versions);
+        $this->assertArrayHasKey('0.0.1', array_column($versions, null, 'version'));
     }
 
     public function testAllVersionsOfCardEmptyForInvalidCard()
@@ -175,23 +175,23 @@ class DatabaseTest extends WP_UnitTestCase
     }
 
     public function testAllLanguagesOfCardContainsCorrectLanguages() {
-        $langs = $this->classInstance->all_languagesOfCard(2);
+        $langs = $this->classInstance->all_languagesOfCard(2, '0.0.1');
 
         $this->assertEquals(2, count($langs));
-        $this->assertContains('de', $langs);
-        $this->assertContains('en', $langs);
+        $this->assertArrayHasKey('de', array_column($langs, null, 'lang'));
+        $this->assertArrayHasKey('en', array_column($langs, null, 'lang'));
     }
 
     public function testAllLanguagesOfCardContainsOnlyLanguagesWithMatchingVersion() {
         $langs = $this->classInstance->all_languagesOfCard(2, '0.0.0');
 
         $this->assertEquals(1, count($langs));
-        $this->assertContains('en', $langs);
+        $this->assertArrayHasKey('en', array_column($langs, null, 'lang'));
     }
 
     public function testAllLanguagesOfCardEmptyForInvalidCard()
     {
-        $langs = $this->classInstance->all_languagesOfCard(99);
+        $langs = $this->classInstance->all_languagesOfCard(99, '0.0.0');
 
         $this->assertEquals(0, count($langs));
     }
