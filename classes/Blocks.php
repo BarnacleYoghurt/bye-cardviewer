@@ -292,14 +292,23 @@ class Blocks
     }
 
     function shortcode_cardlink($atts, $content) {
-        $cardId = $atts['id'] ?? 0;
-        $version = $atts['version'] ?? '99.99.99';
+        $cardId = $atts['id'] ?? '';
+        $version = $atts['version'] ?? '';
+        $language = $atts['language'] ?? '';
+        $args = array_map(
+            function ($name, $a) {
+                return strlen($a) > 0 ? sprintf('%s=%s', $name, $a) : '';
+            },
+            [ 'cardId', 'version', 'language' ],
+            [ $cardId, $version, $language ]
+        );
         return sprintf('
-            <a href="%s?cardId=%s&version=%s" target="_blank" title="Click to open card viewer" 
-                data-cardid="%s" data-version="%s" 
+            <a href="%s?%s" target="_blank" title="Click to open card viewer" 
+                data-cardid="%s" data-version="%s" data-language="%s"
                 onmouseenter="show_cardlink(event)" onmouseleave="hide_cardlink(event)">
                 %s
             </a>',
-            get_option('cardviewer-page'), $cardId, $version, $cardId, $version, $content);
+            get_option('cardviewer-page'), implode('&', array_filter($args)),
+            $cardId, $version, $language, $content);
     }
 }

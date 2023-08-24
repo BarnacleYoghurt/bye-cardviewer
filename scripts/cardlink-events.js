@@ -1,6 +1,11 @@
 function show_cardlink(event) {
     event.target.dataset.hover = 'true';
-    jQuery.get(`/wp-json/bye/v1/cardblock-renderer?cardId=${event.target.dataset.cardid}&version=${event.target.dataset.version}`, (res) => {
+    const args = [
+        { key: 'cardId', val: event.target.dataset.cardid },
+        { key: 'version', val: event.target.dataset.version },
+        { key: 'language', val: event.target.dataset.language }
+    ].map((pair) => pair.val ? `${pair.key}=${pair.val}` : '');
+    jQuery.get(`/wp-json/bye/v1/cardblock-renderer?${args.filter(x => x.length > 0).join('&')}`, (res) => {
         if(event.target.dataset.hover !== 'true') {
             return;
         }
