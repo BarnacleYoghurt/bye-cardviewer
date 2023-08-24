@@ -39,11 +39,11 @@ class Blocks
     }
 
     function enqueue_cardlink_events() {
-        wp_enqueue_script('cardlink-events', plugin_dir_url(__FILE__) . '../scripts/cardlink-events.js');
+        wp_enqueue_script('cardlink-events', plugin_dir_url(__DIR__) . 'scripts/cardlink-events.js');
     }
 
     function enqueue_cardviewer_select_events() {
-        wp_enqueue_script('cardviewer-select-events', plugin_dir_url(__FILE__) . '../scripts/cardviewer-select-events.js');
+        wp_enqueue_script('cardviewer-select-events', plugin_dir_url(__DIR__) . 'scripts/cardviewer-select-events.js');
     }
 
     function bye_cardviewer_card_render($block_attributes, $content)
