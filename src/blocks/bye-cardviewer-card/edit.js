@@ -1,6 +1,7 @@
 import {useBlockProps, InspectorControls} from '@wordpress/block-editor';
-import {PanelBody, ToggleControl} from '@wordpress/components';
+import {PanelBody, ToggleControl, TextControl, SelectControl, Button} from '@wordpress/components';
 import {useState, useEffect} from '@wordpress/element';
+import ServerSideRender from '@wordpress/server-side-render';
 
 const _siteUrl = 'https://bye-project.xyz'; //better replace this with a get_site_url passed in from PHP
 
@@ -42,25 +43,13 @@ export const edit = function ({attributes, setAttributes}) {
     useEffect(() => {
         updateCardsList();
     }, [attributes.expansion, attributes.version, attributes.language]);
-    useEffect(() => {
-        let _imgUrl = _siteUrl + '/wp-content/uploads/cards/' + selectedCard?.version + '/' + attributes.expansion + '/' + selectedCard?.lang + '/' + attributes.cardId + '.png';
-        let testImage = new Image();
-        testImage.onload = () => {
-            setImgUrl(_imgUrl);
-        }
-        testImage.onerror = () => {
-            setImgUrl(_imgUrl.substring(0, _imgUrl.length - 4) + '.jpg');
-        }
-        testImage.src = _imgUrl;
-
-    }, [attributes.expansion, attributes.cardId, attributes.version, attributes.language, cards])
 
     return <div {...blockProps}>
         <InspectorControls>
             <PanelBody title={'Card Selection'} initialOpen={true}>
                 <fieldset>
-                    <legend>Card of the Day?</legend>
                     <ToggleControl {...{
+                        label: "Card of the Day?",
                         help: "Display random card of the day instead of a specific card",
                         checked: attributes.cardOfTheDay,
                         onChange: function(event) {
@@ -70,61 +59,124 @@ export const edit = function ({attributes, setAttributes}) {
                     </ToggleControl>
                 </fieldset>
                 <fieldset>
-                    <legend>Expansion</legend>
-                    <select {...{
+                    <SelectControl {...{
+                        label: "Expansion",
                         value: attributes.expansion,
+                        options: expansions.map((expansion) => ({value: expansion.code, label: expansion.name})),
                         disabled: (expansions.length === 0 || attributes.cardOfTheDay),
-                        onChange: function (event) {
-                            setAttributes({expansion: event.target.value})
+                        onChange: function (value) {
+                            setAttributes({expansion: value})
                         }
-                    }}>
-                        {expansions.map((expansion) => {
-                            return <option {...{value: expansion.code}}>{expansion.name}</option>
-                        })}
-                    </select>
+                    }}/>
                 </fieldset>
                 <fieldset>
-                    <legend>Card</legend>
-                    <select {...{
+                    <SelectControl {...{
+                        label: "Card",
                         value: attributes.cardId,
                         disabled: (cards.length === 0 || attributes.cardOfTheDay),
-                        onChange: function (event) {
-                            setAttributes({cardId: event.target.value})
+                        options: cards.map((card) => ({value: card.code, label: card.name})),
+                        onChange: function (value) {
+                            setAttributes({cardId: value})
+                        }
+                    }}/>
+                </fieldset>
+                <fieldset>
+                    <TextControl {...{
+                        label: "Max. Version",
+                        disabled:  attributes.cardOfTheDay,
+                        value: attributes.version,
+                        onChange: function (value) {
+                            setAttributes({version: value.trim().length > 0 ? value : null})
+                        }
+                    }}/>
+                </fieldset>
+                <fieldset>
+                    <TextControl {...{
+                        label: "Language",
+                        value: attributes.language,
+                        onChange: function (value) {
+                            setAttributes({language: value.trim().length > 0 ? value : null})
+                        }
+                    }}/>
+                </fieldset>
+                <Button {...{
+                    text: "Reload Lists",
+                    variant: "secondary",
+                    onClick: () => {
+                        updateExpansionsList();
+                        updateCardsList();
+                    }
+                }}/>
+            </PanelBody>
+            <PanelBody title={'URL Parameters'} initialOpen={false}>
+                <fieldset>
+                    <ToggleControl {...{
+                        label: "From URL params?",
+                        help: "Specify card to display in URL parameters",
+                        checked: attributes.fromUrlParams,
+                        onChange: function(event) {
+                            setAttributes({fromUrlParams: !attributes.fromUrlParams})
                         }
                     }}>
-                        {cards.map((card) => {
-                            return <option {...{value: card.code}}>{card.name}</option>
-                        })}
-                    </select>
-                </fieldset>
-                <fieldset>
-                    <legend>Max. Version</legend>
-                    <input {...{
-                        disabled:  attributes.cardOfTheDay,
-                        value: attributes.version, onChange: function (event) {
-                            setAttributes({version: event.target.value.trim().length > 0 ? event.target.value : null})
+                    </ToggleControl>
+                    <TextControl {...{
+                        label: "Card ID param",
+                        help: "Name of card ID URL parameter",
+                        value: attributes.urlParamCardId,
+                        onChange: function (value) {
+                            setAttributes({urlParamCardId: value.trim().length > 0 ? value : null})
+                        }
+                    }}/>
+                    <TextControl {...{
+                        label: "Version param",
+                        help: "Name of max. version parameter",
+                        value: attributes.urlParamVersion,
+                        onChange: function (value) {
+                            setAttributes({urlParamVersion: value.trim().length > 0 ? value : null})
+                        }
+                    }}/>
+                    <TextControl {...{
+                        label: "Language param",
+                        help: "Name of language parameter",
+                        value: attributes.urlParamLanguage,
+                        onChange: function (value) {
+                            setAttributes({urlParamLanguage: value.trim().length > 0 ? value : null})
                         }
                     }}/>
                 </fieldset>
+            </PanelBody>
+            <PanelBody title={'Frontend Selection'} initialOpen={false}>
                 <fieldset>
-                    <legend>Language</legend>
-                    <input {...{
-                        value: attributes.language, onChange: function (event) {
-                            setAttributes({language: event.target.value.trim().length > 0 ? event.target.value : null})
+                    <ToggleControl {...{
+                        label: "Allow card selection in frontend?",
+                        help: "Include frontend controls to let the user change the displayed card.",
+                        checked: attributes.selectableCard,
+                        onChange: function(event) {
+                            setAttributes({selectableCard: !attributes.selectableCard})
                         }
-                    }}/>
+                    }}>
+                    </ToggleControl>
+                    <ToggleControl {...{
+                        label: "Version selection",
+                        help: "Let the user switch between different versions of the displayed card.",
+                        checked: attributes.selectableVersion,
+                        onChange: function(event) {
+                            setAttributes({selectableVersion: !attributes.selectableVersion})
+                        }
+                    }}>
+                    </ToggleControl>
+                    <ToggleControl {...{
+                        label: "Language selection",
+                        help: "Let the user select the language of the displayed card.",
+                        checked: attributes.selectableLanguage,
+                        onChange: function(event) {
+                            setAttributes({selectableLanguage: !attributes.selectableLanguage})
+                        }
+                    }}>
+                    </ToggleControl>
                 </fieldset>
-                <button onClick={() => {
-                    updateExpansionsList();
-                    updateCardsList();
-                }}>Reload</button>
             </PanelBody>
         </InspectorControls>
-        <img className="bye-card-image" src={imgUrl}
-             alt="Preview Image"/>
-        <h2 className="bye-card-cardname">{selectedCard?.name ?? ''}</h2>
-        <p className="bye-card-cardtext">
-            <span>{selectedCard?.description ?? ''}</span>
-        </p>
+        <ServerSideRender block="bye-cardviewer/card" attributes={ attributes }/>
     </div>
 };

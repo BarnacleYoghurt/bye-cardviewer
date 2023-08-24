@@ -109,6 +109,29 @@ class Database
         return $result;
     }
 
+    public function all_versionsOfCard($code, $lang = 'en') {
+        global $wpdb;
+        $result = $wpdb->get_results($wpdb->prepare("SELECT c.*, t.* FROM {$this->table_cards()} c
+                                                    JOIN {$this->table_cardtexts()} t ON c.id = t.card_id
+                                                    WHERE c.code = %s AND t.lang = %s", $code, $lang));
+        foreach ($result as $card) {
+            $card->version = $this->decanonicalize_version_string($card->version);
+        }
+        return $result;
+    }
+
+    public function all_languagesOfCard($code, $exact_version) {
+        global $wpdb;
+        $canonical_version = $this->canonicalize_version_string($exact_version);
+        $result = $wpdb->get_results($wpdb->prepare("SELECT c.*, t.* FROM {$this->table_cards()} c
+                                                JOIN {$this->table_cardtexts()} t ON c.id = t.card_id
+                                                WHERE c.code = %s AND c.version = %s", $code, $canonical_version));
+        foreach ($result as $card) {
+            $card->version = $this->decanonicalize_version_string($card->version);
+        }
+        return $result;
+    }
+
     public function all_cards_in_expansion($expansion_code, $max_version = '99.99.99', $lang = 'en')
     {
         $canonical_version = $this->canonicalize_version_string($max_version);
@@ -163,10 +186,11 @@ class Database
     }
 
     function find_card_ofTheDay($lang = 'en') {
+        // Note: Each language has its own Card of the Day!
         $cards = $this->all_cards('99.99.99',$lang);
         if (count($cards) > 0) {
             $today = fmod(hexdec((hash("crc32c", date("Y-m-d", time())))), count($cards));
-            return $this->find_card($cards[$today]->code, '99.99.99');
+            return $this->find_card($cards[$today]->code, '99.99.99', $lang);
         } else {
             throw new DBException('Cannot get card of the day because there are no cards!');
         }

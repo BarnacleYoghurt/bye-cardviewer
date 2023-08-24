@@ -19,13 +19,13 @@ class Admin
         add_submenu_page('bye-cards', 'BYE Expansions', 'BYE Expansions', 'manage_options', 'bye-expansions', array($this, 'admin_page_expansions'));
 
         add_options_page('BYE Settings', 'BYE Settings', 'manage_options', 'bye-settings', array($this, 'admin_page_settings'));
-        add_settings_section('cotd','Card of the Day',function(){},'bye-settings');
-        register_setting('bye-settings', 'cotd-page', array(
+        add_settings_section('pages','Special Pages',function(){},'bye-settings');
+        register_setting('bye-settings', 'cardviewer-page', array(
             'type' => 'string',
-            'description' => 'Card of the Day Page',
+            'description' => 'Card Viewer Page',
             'default' => '#'
         ));
-        add_settings_field('cotd-page', 'Card of the Day Page', array($this, 'admin_field_cotdPage'), 'bye-settings', 'cotd');
+        add_settings_field('cardviewer-page', 'Card Viewer Page', array($this, 'admin_field_cardViewerPage'), 'bye-settings', 'pages');
     }
 
     function admin_page_cards()
@@ -254,11 +254,11 @@ class Admin
         }
     }
 
-    function admin_field_cotdPage($args)
+    function admin_field_cardViewerPage($args)
     {
-        $cotdPage = get_option('cotd-page');
+        $cardViewerPage = get_option('cardviewer-page');
         ?>
-        <input name="cotd-page" value="<?php echo $cotdPage ?>"/>
+        <input name="cardviewer-page" value="<?php echo $cardViewerPage ?>"/>
         <?php
     }
 }

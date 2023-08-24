@@ -179,8 +179,134 @@ class BlocksTest extends WP_UnitTestCase
         $output = $this->classInstance->bye_cardviewer_card_render($blockAttributes, '');
         \WP_Block_Supports::$block_to_render = null;
 
+        $this->assertStringContainsString('THE CARD NAME', $output);
         $this->assertStringContainsString('THE CARD TYPE', $output);
-        $this->assertStringContainsString('THE CARD TYPE', $output);
+    }
+
+    public function testBYECardviewerCardRenderSuccessPrioritizesURLParamsIfCardIdGiven()
+    {
+        $cardInfo0 = $this->createMock(CardInfo::class);
+        $cardInfo0->method('getName')->willReturn('THE CARD NAME 0');
+        $cardInfo0->method('getTypeName')->willReturn('THE CARD TYPE 0');
+        $cardInfo1 = $this->createMock(CardInfo::class);
+        $cardInfo1->method('getName')->willReturn('THE CARD NAME 1');
+        $cardInfo1->method('getTypeName')->willReturn('THE CARD TYPE 1');
+        $cardInfo2 = $this->createMock(CardInfo::class);
+        $cardInfo2->method('getName')->willReturn('THE CARD NAME 2');
+        $cardInfo2->method('getTypeName')->willReturn('THE CARD TYPE 2');
+        $cardInfo1de = $this->createMock(CardInfo::class);
+        $cardInfo1de->method('getName')->willReturn('DER KARTENNAME 1');
+        $cardInfo1de->method('getTypeName')->willReturn('DER KARTENTYP 1');
+        $this->dbStub->method('find_card')->will($this->returnValueMap([
+            [0,'0.0.0','en',$cardInfo0],
+            [1,'0.0.1','en',$cardInfo1],
+            [1,'0.0.1','de',$cardInfo1de],
+        ]));
+        $this->dbStub->method('find_card_ofTheDay')->willReturn($cardInfo2);
+        $this->dbStub->method('get_expansion')->willReturn((object)array('name' => 'Test Expansion', 'code' => 'test'));
+
+        $blockAttributes = array(
+            'cardId' => 0,
+            'version' => '0.0.0',
+            'expansion' => 'test',
+            'className' => '',
+            'fromUrlParams' => true,
+            'urlParamCardId' => 'cardId',
+            'urlParamVersion' => 'version',
+            'urlParamLanguage' => 'language',
+            'cardOfTheDay' => true
+        );
+
+        \WP_Block_Supports::$block_to_render = array(
+            'blockName' => '',
+            'attrs' => ''); //Pretend we are actually WP rendering the block
+        $_GET['cardId'] = 1;
+        $_GET['version'] = '0.0.1';
+        $_GET['language'] = 'de';
+        $output = $this->classInstance->bye_cardviewer_card_render($blockAttributes, '');
+        \WP_Block_Supports::$block_to_render = null;
+
+        $this->assertStringContainsString($cardInfo1de->getName(), $output);
+        $this->assertStringContainsString($cardInfo1de->getTypeName(), $output);
+    }
+
+    public function testBYECardviewerCardRenderSuccessPrioritizesCOTDIfNoCardIdInURL()
+    {
+        $cardInfo0 = $this->createMock(CardInfo::class);
+        $cardInfo0->method('getName')->willReturn('THE CARD NAME 0');
+        $cardInfo0->method('getTypeName')->willReturn('THE CARD TYPE 0');
+        $cardInfo1 = $this->createMock(CardInfo::class);
+        $cardInfo1->method('getName')->willReturn('THE CARD NAME 1');
+        $cardInfo1->method('getTypeName')->willReturn('THE CARD TYPE 1');
+        $cardInfo2 = $this->createMock(CardInfo::class);
+        $cardInfo2->method('getName')->willReturn('THE CARD NAME 2');
+        $cardInfo2->method('getTypeName')->willReturn('THE CARD TYPE 2');
+        $this->dbStub->method('find_card')->will($this->returnValueMap([
+            [0,'0.0.0','en',$cardInfo0],
+            [1,'0.0.1','en',$cardInfo1],
+        ]));
+        $this->dbStub->method('find_card_ofTheDay')->willReturn($cardInfo2);
+        $this->dbStub->method('get_expansion')->willReturn((object)array('name' => 'Test Expansion', 'code' => 'test'));
+
+        $blockAttributes = array(
+            'cardId' => 0,
+            'version' => '0.0.0',
+            'expansion' => 'test',
+            'className' => '',
+            'fromUrlParams' => true,
+            'urlParamCardId' => 'cardId',
+            'urlParamVersion' => 'version',
+            'cardOfTheDay' => true
+        );
+
+        \WP_Block_Supports::$block_to_render = array(
+            'blockName' => '',
+            'attrs' => ''); //Pretend we are actually WP rendering the block
+        $_GET['version'] = '0.0.1';
+        $output = $this->classInstance->bye_cardviewer_card_render($blockAttributes, '');
+        \WP_Block_Supports::$block_to_render = null;
+
+        $this->assertStringContainsString('THE CARD NAME 2', $output);
+        $this->assertStringContainsString('THE CARD TYPE 2', $output);
+    }
+
+    public function testBYECardviewerCardRenderSuccessUseStaticConfigWithURLParamsIfNeitherCOTDNorCardIDInURL()
+    {
+        $cardInfo0 = $this->createMock(CardInfo::class);
+        $cardInfo0->method('getName')->willReturn('THE CARD NAME 0');
+        $cardInfo0->method('getTypeName')->willReturn('THE CARD TYPE 0');
+        $cardInfo1 = $this->createMock(CardInfo::class);
+        $cardInfo1->method('getName')->willReturn('THE CARD NAME 1');
+        $cardInfo1->method('getTypeName')->willReturn('THE CARD TYPE 1');
+        $cardInfo2 = $this->createMock(CardInfo::class);
+        $cardInfo2->method('getName')->willReturn('THE CARD NAME 2');
+        $cardInfo2->method('getTypeName')->willReturn('THE CARD TYPE 2');
+        $this->dbStub->method('find_card')->will($this->returnValueMap([
+            [0, '0.0.0', 'en', $cardInfo0],
+            [0, '0.0.1', 'en', $cardInfo1],
+            [1, '0.0.1', 'en', $cardInfo2],
+        ]));
+        $this->dbStub->method('get_expansion')->willReturn((object)array('name' => 'Test Expansion', 'code' => 'test'));
+
+        $blockAttributes = array(
+            'cardId' => 0,
+            'version' => '0.0.0',
+            'expansion' => 'test',
+            'className' => '',
+            'fromUrlParams' => true,
+            'urlParamCardId' => 'cardId',
+            'urlParamVersion' => 'version',
+        );
+
+        \WP_Block_Supports::$block_to_render = array(
+            'blockName' => '',
+            'attrs' => ''); //Pretend we are actually WP rendering the block
+        $_GET['version'] = '0.0.1';
+        $output = $this->classInstance->bye_cardviewer_card_render($blockAttributes, '');
+        \WP_Block_Supports::$block_to_render = null;
+
+        $this->assertStringContainsString('THE CARD NAME 1', $output);
+        $this->assertStringContainsString('THE CARD TYPE 1', $output);
     }
 
     public function testBYECardviewerCardRenderErrorOutputShowsError()

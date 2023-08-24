@@ -40,6 +40,11 @@ class ApiController extends WP_REST_Controller
             'permission_callback' => '__return_true',
             'args' => array(),
         ));
+        register_rest_route($namespace, '/cardblock-renderer', array(
+            'methods' => WP_REST_Server::READABLE,
+            'callback' => array($this, 'get_cardblockRenderer'),
+            'permission_callback' => '__return_true',
+        ));
     }
 
     function get_expansions($data)
@@ -66,5 +71,17 @@ class ApiController extends WP_REST_Controller
         } catch (DBException $e) {
             return new WP_REST_Response($e,404);
         }
+    }
+
+    function get_cardblockRenderer($data) {
+        $out = array(
+            'rendered' => render_block(array(
+                    'blockName'     => 'bye-cardviewer/card',
+                    'attrs'         => $data,
+                    'innerHTML'     => '',
+                    'innerContent'  => array()
+                ))
+        );
+        return new WP_REST_Response($out, 200);
     }
 }
