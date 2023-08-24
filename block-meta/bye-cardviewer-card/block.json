@@ -1,7 +1,7 @@
 {
   "name": "bye-cardviewer/card",
   "apiVersion": 2,
-  "version": "0.1.0",
+  "version": "0.1.3",
   "title": "BYE Card",
   "editorScript": "file:../../build/index.js",
   "style": "file:../../build/index.css",
@@ -18,6 +18,37 @@
     },
     "version": {
       "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "default": "en"
+    },
+    "cardOfTheDay": {
+      "type": "boolean"
+    },
+    "fromUrlParams": {
+      "type": "boolean"
+    },
+    "urlParamCardId": {
+      "type": "string",
+      "default": "cardId"
+    },
+    "urlParamVersion": {
+      "type": "string",
+      "default": "version"
+    },
+    "urlParamLanguage": {
+      "type": "string",
+      "default": "language"
+    },
+    "selectableCard": {
+      "type": "boolean"
+    },
+    "selectableVersion": {
+      "type": "boolean"
+    },
+    "selectableLanguage": {
+      "type": "boolean"
     }
   }
 }
