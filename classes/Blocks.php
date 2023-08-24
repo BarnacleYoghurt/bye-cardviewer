@@ -68,7 +68,6 @@ class Blocks
              */
 
             $wrapper_attr = [];
-            $cotd = $this->database->find_card_ofTheDay($block_attributes['language'] ?? 'en');
             if (array_key_exists('fromUrlParams', $block_attributes) && $block_attributes['fromUrlParams']) {
                 //Note: Params like cardId[card1] won't work here because PHP is an array-expanding little shit
                 //explicit null fallback handles case where neither $_GET nor $block_attributes has the value set
@@ -89,6 +88,8 @@ class Blocks
                         $block_attributes['language'] ?? 'en');
                 } // otherwise we just proceed with the overridden auxiliary attributes
             }
+
+            $cotd = $this->database->find_card_ofTheDay($block_attributes['language'] ?? 'en');
             if (!isset($carddata)) { // If card isn't given by URL, first try CotD and only then the static config
                 if (array_key_exists('cardOfTheDay', $block_attributes) && $block_attributes['cardOfTheDay']) {
                     $carddata = $cotd;

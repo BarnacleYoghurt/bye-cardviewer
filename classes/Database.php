@@ -186,10 +186,11 @@ class Database
     }
 
     function find_card_ofTheDay($lang = 'en') {
+        // Note: Each language has its own Card of the Day!
         $cards = $this->all_cards('99.99.99',$lang);
         if (count($cards) > 0) {
             $today = fmod(hexdec((hash("crc32c", date("Y-m-d", time())))), count($cards));
-            return $this->find_card($cards[$today]->code, '99.99.99');
+            return $this->find_card($cards[$today]->code, '99.99.99', $lang);
         } else {
             throw new DBException('Cannot get card of the day because there are no cards!');
         }
