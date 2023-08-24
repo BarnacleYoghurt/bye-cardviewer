@@ -121,18 +121,26 @@ export const edit = function ({attributes, setAttributes}) {
                     </ToggleControl>
                     <TextControl {...{
                         label: "Card ID param",
-                        help: "Name of (mandatory) card ID URL parameter",
+                        help: "Name of card ID URL parameter",
                         value: attributes.urlParamCardId,
-                        onChange: function (event) {
-                            setAttributes({urlParamCardId: event.target.value})
+                        onChange: function (value) {
+                            setAttributes({urlParamCardId: value.trim().length > 0 ? value : null})
                         }
                     }}/>
                     <TextControl {...{
                         label: "Version param",
-                        help: "Name of (optional) max. version parameter",
+                        help: "Name of max. version parameter",
                         value: attributes.urlParamVersion,
-                        onChange: function (event) {
-                            setAttributes({urlParamVersion: event.target.value})
+                        onChange: function (value) {
+                            setAttributes({urlParamVersion: value.trim().length > 0 ? value : null})
+                        }
+                    }}/>
+                    <TextControl {...{
+                        label: "Language param",
+                        help: "Name of language parameter",
+                        value: attributes.urlParamLanguage,
+                        onChange: function (value) {
+                            setAttributes({urlParamLanguage: value.trim().length > 0 ? value : null})
                         }
                     }}/>
                 </fieldset>

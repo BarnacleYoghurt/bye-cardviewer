@@ -194,9 +194,13 @@ class BlocksTest extends WP_UnitTestCase
         $cardInfo2 = $this->createMock(CardInfo::class);
         $cardInfo2->method('getName')->willReturn('THE CARD NAME 2');
         $cardInfo2->method('getTypeName')->willReturn('THE CARD TYPE 2');
+        $cardInfo1de = $this->createMock(CardInfo::class);
+        $cardInfo1de->method('getName')->willReturn('DER KARTENNAME 1');
+        $cardInfo1de->method('getTypeName')->willReturn('DER KARTENTYP 1');
         $this->dbStub->method('find_card')->will($this->returnValueMap([
             [0,'0.0.0','en',$cardInfo0],
             [1,'0.0.1','en',$cardInfo1],
+            [1,'0.0.1','de',$cardInfo1de],
         ]));
         $this->dbStub->method('find_card_ofTheDay')->willReturn($cardInfo2);
         $this->dbStub->method('get_expansion')->willReturn((object)array('name' => 'Test Expansion', 'code' => 'test'));
@@ -209,6 +213,7 @@ class BlocksTest extends WP_UnitTestCase
             'fromUrlParams' => true,
             'urlParamCardId' => 'cardId',
             'urlParamVersion' => 'version',
+            'urlParamLanguage' => 'language',
             'cardOfTheDay' => true
         );
 
@@ -217,11 +222,12 @@ class BlocksTest extends WP_UnitTestCase
             'attrs' => ''); //Pretend we are actually WP rendering the block
         $_GET['cardId'] = 1;
         $_GET['version'] = '0.0.1';
+        $_GET['language'] = 'de';
         $output = $this->classInstance->bye_cardviewer_card_render($blockAttributes, '');
         \WP_Block_Supports::$block_to_render = null;
 
-        $this->assertStringContainsString('THE CARD NAME 1', $output);
-        $this->assertStringContainsString('THE CARD TYPE 1', $output);
+        $this->assertStringContainsString($cardInfo1de->getName(), $output);
+        $this->assertStringContainsString($cardInfo1de->getTypeName(), $output);
     }
 
     public function testBYECardviewerCardRenderSuccessPrioritizesCOTDIfNoCardIdInURL()

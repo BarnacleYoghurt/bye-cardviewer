@@ -71,8 +71,19 @@ class Blocks
             $cotd = $this->database->find_card_ofTheDay($block_attributes['language'] ?? 'en');
             if (array_key_exists('fromUrlParams', $block_attributes) && $block_attributes['fromUrlParams']) {
                 //Note: Params like cardId[card1] won't work here because PHP is an array-expanding little shit
-                $block_attributes['cardId'] = $_GET[$block_attributes['urlParamCardId']] ?? $block_attributes['cardId'];
-                $block_attributes['version'] = $_GET[$block_attributes['urlParamVersion']] ?? $block_attributes['version'];
+                //explicit null fallback handles case where neither $_GET nor $block_attributes has the value set
+                if (array_key_exists('urlParamCardId', $block_attributes)) {
+                    $block_attributes['cardId'] = $_GET[$block_attributes['urlParamCardId']] ??
+                        ($block_attributes['cardId'] ?? null);
+                }
+                if (array_key_exists('urlParamVersion', $block_attributes)) {
+                    $block_attributes['version'] = $_GET[$block_attributes['urlParamVersion']] ??
+                        ($block_attributes['version'] ?? null);
+                }
+                if (array_key_exists('urlParamLanguage', $block_attributes)) {
+                    $block_attributes['language'] = $_GET[$block_attributes['urlParamLanguage']] ??
+                        ($block_attributes['language'] ?? null);
+                }
                 if ($_GET[$block_attributes['urlParamCardId']] ?? false) { // URL specifies card, prioritize over CotD
                     $carddata = $this->database->find_card($block_attributes['cardId'], $block_attributes['version'] ?? '99.99.99',
                         $block_attributes['language'] ?? 'en');
