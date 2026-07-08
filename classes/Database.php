@@ -8,10 +8,11 @@ include_once("CardInfo.php");
 
 class Database
 {
-    private const DB_VERSION = '0.0.3';
+    private const DB_VERSION = '0.1.0';
     private const TN_EXPANSIONS = 'bye_expansions';
     private const TN_CARDS = 'bye_cards';
     private const TN_CARDTEXTS = 'bye_cardtexts';
+    private const TN_ALTS = 'bye_alts';
 
     function table_expansions()
     {
@@ -29,6 +30,12 @@ class Database
     {
         global $wpdb;
         return $wpdb->prefix . self::TN_CARDTEXTS;
+    }
+
+    function table_alts()
+    {
+        global $wpdb;
+        return $wpdb->prefix . self::TN_ALTS;
     }
 
     function setup_tables()
@@ -67,11 +74,19 @@ class Database
                     description TEXT NOT NULL DEFAULT '',
                     PRIMARY KEY (id)
                 )";
+            $sql_alts =
+                "CREATE TABLE {$this->table_alts()} (
+                    id INT NOT NULL AUTO_INCREMENT,
+                    card_id INT NOT NULL,
+                    alias INT NOT NULL,
+                    PRIMARY KEY (id)
+                )";
 
             require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
             dbDelta($sql_expansions);
             dbDelta($sql_cards);
             dbDelta($sql_cardtexts);
+            dbDelta($sql_alts);
             $wpdb->query("ALTER TABLE {$this->table_cards()} ADD CONSTRAINT `u_cards_code_version` UNIQUE (code, version)");
             $wpdb->query("ALTER TABLE {$this->table_cardtexts()} ADD CONSTRAINT `u_cardtexts_cardid_lang` UNIQUE (card_id, lang)");
             $wpdb->query(
@@ -81,6 +96,11 @@ class Database
     			ON UPDATE CASCADE");
             $wpdb->query(
                 "ALTER TABLE {$this->table_cardtexts()} ADD CONSTRAINT `fk_cardtexts_cards`
+                FOREIGN KEY IF NOT EXISTS (card_id) REFERENCES {$this->table_cards()} (id)
+                ON DELETE RESTRICT 
+                ON UPDATE CASCADE");
+            $wpdb->query(
+                "ALTER TABLE {$this->table_alts()} ADD CONSTRAINT `fk_alts_cards`
                 FOREIGN KEY IF NOT EXISTS (card_id) REFERENCES {$this->table_cards()} (id)
                 ON DELETE RESTRICT 
                 ON UPDATE CASCADE");
