@@ -61,6 +61,7 @@ class CardInfo implements \JsonSerializable
     public const RACE_CREATORGOD   = 0x400000;
     public const RACE_WYRM         = 0x800000;
     public const RACE_CYBERSE      = 0x1000000;
+    public const RACE_ILLUSION     = 0x2000000;
 
     public const LINK_MARKER_BOTTOM_LEFT  = 0x001;
     public const LINK_MARKER_BOTTOM       = 0x002;
@@ -281,8 +282,10 @@ class CardInfo implements \JsonSerializable
                 return 'Wyrm';
             case self::RACE_CYBERSE:
                 return 'Cyberse';
+            case self::RACE_ILLUSION:
+                return 'Illusion';
         }
-        return '`?';
+        return '?';
     }
 
     /**
