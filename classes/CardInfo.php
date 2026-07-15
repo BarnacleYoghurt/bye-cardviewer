@@ -85,8 +85,9 @@ class CardInfo implements \JsonSerializable
     private string $lang;
     private string $name;
     private string $description;
+    private array $aliases;
 
-    public function __construct(int $code, string $version, int $expansion_id, int $type, int $attribute, int $race, int $level, int $atk, int $def, string $lang, string $name, string $description)
+    public function __construct(int $code, string $version, int $expansion_id, int $type, int $attribute, int $race, int $level, int $atk, int $def, string $lang, string $name, string $description, array $aliases = [])
     {
         $this->code = $code;
         $this->version = $version;
@@ -100,6 +101,7 @@ class CardInfo implements \JsonSerializable
         $this->lang = $lang;
         $this->name = $name;
         $this->description = $description;
+        $this->aliases = $aliases;
     }
 
     /**
@@ -363,6 +365,14 @@ class CardInfo implements \JsonSerializable
     public function getDescription(): string
     {
         return $this->description;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAliases(): array
+    {
+        return $this->aliases;
     }
 
     public function jsonSerialize()

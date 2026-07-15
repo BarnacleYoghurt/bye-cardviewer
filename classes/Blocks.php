@@ -82,11 +82,6 @@ class Blocks
                 }
             }
             $expansion = $this->database->get_expansion($carddata->getExpansionId());
-            $image_url = '/cards/' . $carddata->getVersion() . '/' . $expansion->code . '/' . $carddata->getLang() . '/' . $carddata->getCode() . '.png';
-            if (!file_exists(wp_upload_dir()['basedir'] . $image_url)) {
-                $image_url = substr($image_url, 0, strlen($image_url) - 4) . '.jpg';
-            }
-            $image_url = wp_upload_dir()['baseurl'] . $image_url;
 
             if (
                 (array_key_exists('selectableCard', $block_attributes) && $block_attributes['selectableCard']) ||
@@ -171,11 +166,30 @@ class Blocks
             else {
                 $el_select = '';
             }
+
+            $image_url = '/cards/' . $carddata->getVersion() . '/' . $expansion->code . '/' . $carddata->getLang() . '/' . $carddata->getCode() . '.png';
+            if (!file_exists(wp_upload_dir()['basedir'] . $image_url)) {
+                $image_url = substr($image_url, 0, strlen($image_url) - 4) . '.jpg';
+            }
+            $image_url = wp_upload_dir()['baseurl'] . $image_url;
+            $el_alts = '';
+            if (count($carddata->getAliases()) > 0) {
+                $el_alts = sprintf('<div class="bye-card-alts">%s</div>', implode('',
+                    array_map(function ($alias) use ($image_url) {
+                        $alt_url = substr($image_url, 0, strrpos($image_url, '/') + 1) . $alias . '.png';
+                        $alt_path = substr_replace($alt_url, wp_upload_dir()['basedir'], 0, strlen(wp_upload_dir()['baseurl']));
+                        if (!file_exists($alt_path)) {
+                            $alt_url = substr($alt_url, 0, strlen($alt_url) - 4) . '.jpg';
+                        }
+                        // TODO: implement this callback so it switches the image and only falls back to href if no js
+                        return sprintf('<a target="_blank" href="%s" onclick="update_cardviewer_image(event)">●</a>', $alt_url);
+                    }, $carddata->getAliases())));
+            }
             // In some cases such as dynamic block rendering via API, the lightbox plugin cannot attach to the link
             // Open in new tab for those cases, still better than navigating away from the current page
             // TODO: Look into a lightbox plugin that can attach to dynamic content as well!
-            $el_img = sprintf('<a class="bye-card-image" target="_blank" href="%s"><img src="%s"/></a>',
-                $image_url, $image_url);
+            $el_img = sprintf('<div class="bye-card-image"><a target="_blank" href="%s"><img src="%s"/></a>%s</div>',
+                $image_url, $image_url, $el_alts);
 
             if ($cotd && ($cotd->getCode() == $carddata->getCode())) {
                 $el_congrats = '<span class="bye-card-cotd-marker" title="You\'ve found the card of the day!">🎉</span>';

@@ -177,12 +177,17 @@ class Database
         global $wpdb;
         $canonical_version = $this->canonicalize_version_string($max_version);
 
-        $raw_data = $wpdb->get_row($wpdb->prepare("SELECT c.*, t.*, e.id as expansion_id FROM {$this->table_cards()} c 
+        $raw_data = $wpdb->get_row($wpdb->prepare("SELECT
+                                    c.*, t.*, e.id as expansion_id,
+                                    GROUP_CONCAT(a.alias SEPARATOR '|') as aliases
+                                FROM {$this->table_cards()} c 
                                 JOIN {$this->table_expansions()} e ON c.expansion_id = e.id 
                                 JOIN {$this->table_cardtexts()} t ON c.id = t.card_id 
+                                LEFT JOIN {$this->table_alts()} a ON c.id = a.card_id
 								WHERE c.code=%d
 								AND STRCMP(c.version, %s)<=0
 								AND t.lang=%s
+								GROUP BY c.id
 								ORDER BY c.version DESC LIMIT 1", $code, $canonical_version, $lang));
 
         if (is_null($raw_data)) {
@@ -200,7 +205,9 @@ class Database
                 $raw_data->def,
                 $raw_data->lang,
                 $raw_data->name,
-                $raw_data->description
+                $raw_data->description,
+                $raw_data->aliases === null ? [] :
+                    explode('|', $raw_data->aliases),
             );
         }
     }
