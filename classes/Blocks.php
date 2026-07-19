@@ -174,16 +174,21 @@ class Blocks
             $image_url = wp_upload_dir()['baseurl'] . $image_url;
             $el_alts = '';
             if (count($carddata->getAliases()) > 0) {
-                $el_alts = sprintf('<div class="bye-card-alts">%s</div>', implode('',
-                    array_map(function ($alias) use ($image_url) {
-                        $alt_url = substr($image_url, 0, strrpos($image_url, '/') + 1) . $alias . '.png';
-                        $alt_path = substr_replace($alt_url, wp_upload_dir()['basedir'], 0, strlen(wp_upload_dir()['baseurl']));
-                        if (!file_exists($alt_path)) {
-                            $alt_url = substr($alt_url, 0, strlen($alt_url) - 4) . '.jpg';
-                        }
-                        // TODO: implement this callback so it switches the image and only falls back to href if no js
-                        return sprintf('<a target="_blank" href="%s" onclick="update_cardviewer_image(event)">●</a>', $alt_url);
-                    }, $carddata->getAliases())));
+                $el_alts = sprintf('<div class="bye-card-alts">%s%s%s</div>',
+                    '<span>Standard</span>',
+                    sprintf('<a class="bye-card-curr-alt" target="_blank" href="%s" onclick="update_cardviewer_image(event)">●</a>', $image_url),
+                    implode('',
+                        array_map(function ($alias) use ($image_url) {
+                            $alt_url = substr($image_url, 0, strrpos($image_url, '/') + 1) . $alias . '.png';
+                            $alt_path = substr_replace($alt_url, wp_upload_dir()['basedir'], 0, strlen(wp_upload_dir()['baseurl']));
+                            if (!file_exists($alt_path)) {
+                                $alt_url = substr($alt_url, 0, strlen($alt_url) - 4) . '.jpg';
+                            }
+                            // TODO: implement this callback so it switches the image and only falls back to href if no js
+                            return sprintf('<a target="_blank" href="%s" onclick="update_cardviewer_image(event)">●</a>', $alt_url);
+                        }, $carddata->getAliases())
+                    ),
+                );
             }
             // In some cases such as dynamic block rendering via API, the lightbox plugin cannot attach to the link
             // Open in new tab for those cases, still better than navigating away from the current page
