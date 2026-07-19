@@ -184,7 +184,6 @@ class Blocks
                             if (!file_exists($alt_path)) {
                                 $alt_url = substr($alt_url, 0, strlen($alt_url) - 4) . '.jpg';
                             }
-                            // TODO: implement this callback so it switches the image and only falls back to href if no js
                             return sprintf('<a target="_blank" href="%s" onclick="update_cardviewer_image(event)">●</a>', $alt_url);
                         }, $carddata->getAliases())
                     ),
