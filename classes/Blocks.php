@@ -65,6 +65,10 @@ class Blocks
                     $block_attributes['language'] = $_GET[$block_attributes['urlParamLanguage']] ??
                         ($block_attributes['language'] ?? null);
                 }
+                if (array_key_exists('urlParamArt', $block_attributes)) {
+                    $block_attributes['art'] = $_GET[$block_attributes['urlParamArt']] ??
+                        ($block_attributes['art'] ?? null);
+                }
                 if ($_GET[$block_attributes['urlParamCardId']] ?? false) { // URL specifies card, prioritize over CotD
                     $carddata = $this->database->find_card($block_attributes['cardId'], $block_attributes['version'] ?? '99.99.99',
                         $block_attributes['language'] ?? 'en');
@@ -86,13 +90,16 @@ class Blocks
             if (
                 (array_key_exists('selectableCard', $block_attributes) && $block_attributes['selectableCard']) ||
                 (array_key_exists('selectableVersion', $block_attributes) && $block_attributes['selectableVersion']) ||
-                (array_key_exists('selectableLanguage', $block_attributes) && $block_attributes['selectableLanguage'])
+                (array_key_exists('selectableLanguage', $block_attributes) && $block_attributes['selectableLanguage']) ||
+                (array_key_exists('selectableArt', $block_attributes) && $block_attributes['selectableArt'])
             ) {
                 // The controls need to know which block to update if we have multiple, so an ID is needed
                 // Secret blockId param allows retaining same id when reloading a block
                 $block_id = array_key_exists('blockId', $block_attributes) ? $block_attributes['blockId']
                     : uniqid(); // This is based on the microsecond and hopefully unique enough for this purpose
 
+                // art selection is not handled here since its UI is placed on the image
+                // if only art is set to selectable, this whole section basically just generates the block_id
                 $el_select_expansions = '';
                 $el_select_card = '';
                 $el_select_version = '';
@@ -159,39 +166,55 @@ class Blocks
                                     %s
                           </select>', $block_id, implode('',$opt_lang));
                 }
-                $el_select = sprintf('<div class="bye-card-select">%s%s%s%s</div>',
-                    $el_select_expansions,$el_select_card,$el_select_version,$el_select_lang);
+                if ($el_select_expansions . $el_select_card . $el_select_version . $el_select_lang !== '') {
+                    $el_select = sprintf('<div class="bye-card-select">%s%s%s%s</div>',
+                        $el_select_expansions, $el_select_card, $el_select_version, $el_select_lang);
+                } else {
+                    $el_select = '';
+                }
                 $wrapper_attr += [ 'id' => sprintf('bye-cardviewer-card-%s', $block_id) ];
             }
             else {
                 $el_select = '';
             }
 
-            $image_url = '/cards/' . $carddata->getVersion() . '/' . $expansion->code . '/' . $carddata->getLang() . '/' . $carddata->getCode() . '.png';
+            $currart = $carddata->getCode();
+            if (in_array($block_attributes['art'] ?? -1, $carddata->getAliases(), true)) {
+                $currart = $block_attributes['art'];
+            }
+            $image_url = '/cards/' . $carddata->getVersion() . '/' . $expansion->code . '/' . $carddata->getLang() . '/' . $currart . '.png';
             if (!file_exists(wp_upload_dir()['basedir'] . $image_url)) {
                 $image_url = substr($image_url, 0, strlen($image_url) - 4) . '.jpg';
             }
             $image_url = wp_upload_dir()['baseurl'] . $image_url;
             $el_alts = '';
-            if (count($carddata->getAliases()) > 0) {
-                $el_alts = sprintf('<div class="bye-card-alts">%s%s%s</div>',
-                    '<span>Standard</span>',
-                    sprintf('<a class="bye-card-curr-alt" target="_blank" href="%s" onclick="update_cardviewer_image(event)">●</a>', $image_url),
-                    implode('',
-                        array_map(function ($alias) use ($image_url) {
-                            $alt_url = substr($image_url, 0, strrpos($image_url, '/') + 1) . $alias . '.png';
-                            $alt_path = substr_replace($alt_url, wp_upload_dir()['basedir'], 0, strlen(wp_upload_dir()['baseurl']));
-                            if (!file_exists($alt_path)) {
-                                $alt_url = substr($alt_url, 0, strlen($alt_url) - 4) . '.jpg';
-                            }
-                            return sprintf('<a target="_blank" href="%s" onclick="update_cardviewer_image(event)">●</a>', $alt_url);
-                        }, $carddata->getAliases())
-                    ),
-                );
+
+            if (array_key_exists('selectableArt', $block_attributes) && $block_attributes['selectableArt']) {
+                if (count($carddata->getAliases()) > 0) {
+                    $el_alts = sprintf('<div id="alts-%s" class="bye-card-alts">%s%s</div>', $block_id,
+                        $currart === $carddata->getCode() ? '<span>Standard</span>' : '<span>Alternate</span>',
+                        implode('',
+                            array_map(function ($alias) use ($image_url, $currart) {
+                                $alt_url = substr($image_url, 0, strrpos($image_url, '/') + 1) . $alias . '.png';
+                                $alt_path = substr_replace($alt_url, wp_upload_dir()['basedir'], 0, strlen(wp_upload_dir()['baseurl']));
+                                if (!file_exists($alt_path)) {
+                                    $alt_url = substr($alt_url, 0, strlen($alt_url) - 4) . '.jpg';
+                                }
+                                // data-slb-active="0" keeps the lightbox plugin from acting on the fallback link!
+                                return sprintf('<a%s data-slb-active="0" target="_blank" href="%s" onclick="update_cardviewer_image(event)">●</a>',
+                                    $currart === $alias ? ' class="bye-card-curr-alt"' : '', $alt_url);
+                            }, array_merge([$carddata->getCode()], $carddata->getAliases()))
+                        ),
+                    );
+                } else {
+                    // just to tell the frontend that this should be selectable
+                    $el_alts = sprintf('<div id="alts-%s" style="display:none"></div>', $block_id);
+                }
             }
             // In some cases such as dynamic block rendering via API, the lightbox plugin cannot attach to the link
             // Open in new tab for those cases, still better than navigating away from the current page
             // TODO: Look into a lightbox plugin that can attach to dynamic content as well!
+            // TODO: Switching between alt arts also keeps the originally loaded image attached to the link.
             $el_img = sprintf('<div class="bye-card-image"><a target="_blank" href="%s"><img src="%s"/></a>%s</div>',
                 $image_url, $image_url, $el_alts);
 

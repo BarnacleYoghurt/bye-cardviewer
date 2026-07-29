@@ -26,6 +26,7 @@ function update_cardviewer_card(event) {
     const cardSelect = jQuery(`#c_card-${blockId}`);
     const versionSelect = jQuery(`#c_version-${blockId}`);
     const langSelect = jQuery(`#c_lang-${blockId}`);
+    const artSelect = jQuery(`#alts-${blockId}`);
 
     const block = jQuery(`#bye-cardviewer-card-${blockId}`);
     const cardId = cardSelect.length > 0
@@ -44,6 +45,7 @@ function update_cardviewer_card(event) {
         `&selectableCard=${cardSelect.length}` +
         `&selectableVersion=${versionSelect.length}` +
         `&selectableLanguage=${langSelect.length}` +
+        `&selectableArt=${artSelect.length}` +
         `&blockId=${blockId}`)
         .done((res) => {
             jQuery(`#bye-cardviewer-card-${blockId}`).replaceWith(res.rendered);
@@ -56,16 +58,15 @@ function update_cardviewer_card(event) {
 }
 
 function update_cardviewer_image(event) {
-    // TODO alt links should be tagged with the id too, so we don't need this nonsense
-    const blockId = jQuery(event.target).parents('.wp-block-bye-cardviewer-card')[0].id.split('-')[3];
+    const blockId = event.target.parentElement.id.split('-')[1];
     jQuery(`#bye-cardviewer-card-${blockId} .bye-card-image img`).attr('src', event.target.href);
     // TODO more robust label switching, maybe with a custom title per alt art?
-    if (jQuery(`#bye-cardviewer-card-${blockId} .bye-card-alts span`).text() === 'Standard') {
-        jQuery(`#bye-cardviewer-card-${blockId} .bye-card-alts span`).text('Alternate');
+    if (jQuery(`#alts-${blockId} span`).text() === 'Standard') {
+        jQuery(`#alts-${blockId} span`).text('Alternate');
     } else {
-        jQuery(`#bye-cardviewer-card-${blockId} .bye-card-alts span`).text('Standard');
+        jQuery(`#alts-${blockId} span`).text('Standard');
     }
-    jQuery(`#bye-cardviewer-card-${blockId} .bye-card-alts a`).removeClass('bye-card-curr-alt');
+    jQuery(`#alts-${blockId} a`).removeClass('bye-card-curr-alt');
     jQuery(event.target).addClass('bye-card-curr-alt');
     event.preventDefault();
 }
