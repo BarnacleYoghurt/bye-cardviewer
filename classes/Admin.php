@@ -44,32 +44,39 @@ class Admin
 
                     <?php
                     $cdb = new SQLite3($uploaddir . $filename);
+                    $alts = [];
                     foreach ($_POST['ids'] as $id) {
                         $q = $cdb->prepare('SELECT d.*, t.name, t.desc FROM datas d JOIN texts t ON d.id == t.id WHERE d.id=:id');
                         $q->bindValue(':id', $id, SQLITE3_INTEGER);
                         $card = $q->execute()->fetchArray(SQLITE3_ASSOC);
 
+                        // FIXME surely this does not need to be inside the loop?
                         $expansion_id = $_POST['expansion'];
                         $expansion_code = $this->database->get_expansion($expansion_id)->code;
 
-                        try {
-                            $this->database->create_card(array(
-                                'code' => $id,
-                                'version' => $_POST['version'],
-                                'lang' => $_POST['lang'],
-                                'expansion_id' => $expansion_id,
-                                'type' => $card['type'],
-                                'attribute' => $card['attribute'],
-                                'race' => $card['race'],
-                                'level' => $card['level'],
-                                'atk' => $card['atk'],
-                                'def' => $card['def'],
-                                'name' => $card['name'],
-                                'description' => $card['desc']
-                            ));
-                            echo("<li>Card {$id} ({$card['name']}) inserted into database.</li>");
-                        } catch (DBException $e) {
-                            echo("<li style='color:darkred'>Could not insert card {$id} ({$card['name']}).</li>");
+                        if (is_null($card['alias'])) {
+                            try {
+                                $this->database->create_card(array(
+                                        'code' => $id,
+                                        'version' => $_POST['version'],
+                                        'lang' => $_POST['lang'],
+                                        'expansion_id' => $expansion_id,
+                                        'type' => $card['type'],
+                                        'attribute' => $card['attribute'],
+                                        'race' => $card['race'],
+                                        'level' => $card['level'],
+                                        'atk' => $card['atk'],
+                                        'def' => $card['def'],
+                                        'name' => $card['name'],
+                                        'description' => $card['desc']
+                                ));
+                                echo("<li>Card {$id} ({$card['name']}) inserted into database.</li>");
+                            } catch (DBException $e) {
+                                echo("<li style='color:darkred'>Could not insert card {$id} ({$card['name']}).</li>");
+                            }
+                        } else {
+                            $alts[$card['alias']] = $id;
+                            echo("<li>Card {$id} ({$card['name']}) not inserted - alt art of {$card['alias']}.</li>");
                         }
 
                         $attachment_id = attachment_url_to_postid('cards/' . $_POST['version'] . '/' . $expansion_code . '/' . $_POST['lang'] . '/' . $id . '.png');
@@ -85,6 +92,23 @@ class Admin
                             echo("<li>Caption and description on existing image for card {$id} ({$card['name']}) updated.</li>");
                         } else {
                             echo("<li style='color:darkred'>No image found for card {$id} ({$card['name']}), please manually update caption and description after uploading.</li>");
+                        }
+                    }
+
+                    foreach ($alts as $code => $alias) {
+                        $card = false;
+                        try {
+                            $card = $this->database->find_card($code, $_POST['version'], $_POST['lang']);
+                        } catch (DBException $e) {
+                            echo("<li style='color:darkred'>Could not find base card {$code} for alias {$alias}.</li>");
+                        }
+                        if ($card) { // TODO most reasonable thing would be to check if it is CardInfo, actually
+                            try {
+                                $this->database->store_alt($card->getId(), $alias, $_POST['label']);
+                                echo("<li>Stored alias {$alias} ({$_POST['label']}) for {$code} ({$card->getName()}).</li>");
+                            } catch (DBException $e) {
+                                echo("<li style='color:darkred'>Could not store alias {$alias} for {$code} ({$card->getName()}).</li>");
+                            }
                         }
                     }
                     ?>
@@ -109,6 +133,7 @@ class Admin
                             <input type="hidden" name="version" value="<?= $_POST['version'] ?>"/>
                             <input type="hidden" name="expansion" value="<?= $_POST['expansion'] ?>"/>
                             <input type="hidden" name="lang" value="<?= $_POST['lang'] ?>"/>
+                            <input type="hidden" name="label" value="<?= $_POST['label'] ?>"/>
                             <?php
                             while ($card = $cards->fetchArray(SQLITE3_ASSOC)) {
                                 ?>
@@ -157,6 +182,11 @@ class Admin
                                 <th scope="row"><label for="t_lang"
                                                        style="display:inline-block;width:16ch">Language</label></th>
                                 <td><input id="t_lang" name="lang" type="text" value="en" required/></td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="t_label"
+                                                       style="display:inline-block;width:16ch">Alt Art Label</label></th>
+                                <td><input id="t_label" name="label" type="text"/></td>
                             </tr>
                             <tr>
                                 <th scope="row"><label for="u_cdb" style="display:inline-block;width:16ch">CDB
