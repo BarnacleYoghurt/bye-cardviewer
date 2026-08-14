@@ -197,7 +197,7 @@ class BlocksTest extends WP_UnitTestCase
         $cardInfo1de = $this->createMock(CardInfo::class);
         $cardInfo1de->method('getName')->willReturn('DER KARTENNAME 1');
         $cardInfo1de->method('getTypeName')->willReturn('DER KARTENTYP 1');
-        $cardInfo1de->method('getAliases')->willReturn([11,12]);
+        $cardInfo1de->method('getAliases')->willReturn([11 => 'Anders', 12 => 'Anderster']);
         $this->dbStub->method('find_card')->will($this->returnValueMap([
             [0,'0.0.0','en',$cardInfo0],
             [1,'0.0.1','en',$cardInfo1],
@@ -282,7 +282,7 @@ class BlocksTest extends WP_UnitTestCase
         $cardInfo1 = $this->createMock(CardInfo::class);
         $cardInfo1->method('getName')->willReturn('THE CARD NAME 1');
         $cardInfo1->method('getTypeName')->willReturn('THE CARD TYPE 1');
-        $cardInfo1->method('getAliases')->willReturn([11,12]);
+        $cardInfo1->method('getAliases')->willReturn([11 => 'Alternate', 12 => 'Alt of Alt']);
         $cardInfo2 = $this->createMock(CardInfo::class);
         $cardInfo2->method('getName')->willReturn('THE CARD NAME 2');
         $cardInfo2->method('getTypeName')->willReturn('THE CARD TYPE 2');

@@ -73,6 +73,7 @@ class CardInfo implements \JsonSerializable
     public const LINK_MARKER_TOP_RIGHT    = 0x100;
 
 
+    private int $id;
     private int $code;
     private string $version;
     private int $expansion_id;
@@ -87,8 +88,9 @@ class CardInfo implements \JsonSerializable
     private string $description;
     private array $aliases;
 
-    public function __construct(int $code, string $version, int $expansion_id, int $type, int $attribute, int $race, int $level, int $atk, int $def, string $lang, string $name, string $description, array $aliases = [])
+    public function __construct(int $id, int $code, string $version, int $expansion_id, int $type, int $attribute, int $race, int $level, int $atk, int $def, string $lang, string $name, string $description, array $aliases = [])
     {
+        $this->id = $id;
         $this->code = $code;
         $this->version = $version;
         $this->expansion_id = $expansion_id;
@@ -102,6 +104,14 @@ class CardInfo implements \JsonSerializable
         $this->name = $name;
         $this->description = $description;
         $this->aliases = $aliases;
+    }
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
     }
 
     /**

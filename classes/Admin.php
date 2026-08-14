@@ -17,6 +17,7 @@ class Admin
     {
         add_menu_page('BYE Cards', 'BYE Cards', 'manage_options', 'bye-cards', array($this, 'admin_page_cards'));
         add_submenu_page('bye-cards', 'BYE Expansions', 'BYE Expansions', 'manage_options', 'bye-expansions', array($this, 'admin_page_expansions'));
+        add_submenu_page('bye-cards', 'BYE Alt Arts', 'BYE Alt Arts', 'manage_options', 'bye-alts', array($this, 'admin_page_alts'));
 
         add_options_page('BYE Settings', 'BYE Settings', 'manage_options', 'bye-settings', array($this, 'admin_page_settings'));
         add_settings_section('pages','Special Pages',function(){},'bye-settings');
@@ -234,6 +235,104 @@ class Admin
         </div>
 
         <?php
+    }
+
+    function admin_page_alts() {
+        if (current_user_can('manage_options')) {
+        ?>
+            <div class="wrap">
+                <h1>BYE Alt Arts</h1>
+                <form method="POST">
+                <?php
+                $card = $this->database->find_card($_POST['code'], $_POST['version'], $_POST['lang']);
+
+                if (isset($_POST['code'])) { // manage alts of selected card
+                    foreach ($_POST as $k => $v) {
+                        if (strlen($k) >= 5 && strlen($v) > 0) {
+                            // FIXME wouldn't this have a problem when new is specified, even @expansions?
+                            if (substr($k, 0, 5) === 'label_') {
+                                $alias = substr($k, 5);
+                                if ($alias !== 'new') {
+                                    try {
+                                        $this->database->store_alt($card->getId(), $alias, $v);
+                                    } catch (DBException $e) {
+                                        echo("<p>Could not update alt art {$alias} - {$e->getMessage()}</p>");
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (isset($_POST['alias_new']) && isset($_POST['label_new'])) {
+                        $alias = $_POST['alias_new'];
+                        $label = $_POST['label_new'];
+                        try {
+                            $this->database->store_alt($card->getId(), $alias, $label);
+                        } catch (DBException $e) {
+                            echo("<p>Could not store new alt art - {$e->getMessage()}</p>");
+                        }
+                    }
+
+                    $card = $this->database->find_card($_POST['code'], $_POST['version'], $_POST['lang']);
+                    ?>
+                    <p>Managing alts of "<?= $card->getName() ?>, v<?= $card->getVersion() ?> (<?= $card->getLang() ?>)."</p>
+                    <?php
+                    $alts = $card->getAliases();
+                    ?>
+                    <input name="code" type="hidden" value="<?= $_POST['code'] ?>"/>
+                    <input name="version" type="hidden" value="<?= $_POST['version'] ?>"/>
+                    <input name="lang" type="hidden" value="<?= $_POST['lang'] ?>"/>
+                    <table class="form-table" role="presentation">
+                        <tr>
+                            <th>Alias</th>
+                            <th>Label</th>
+                        </tr>
+                        <?php
+                        foreach ($alts as $alias => $label) {
+                        ?>
+                            <tr>
+                                <td><?= $alias ?></td>
+                                <td><input name="label_<?= $alias ?>" type="text"
+                                           placeholder="<?= $label ?>"/></td>
+                            </tr>
+                        <?php
+                        }
+                        ?>
+                        <tr>
+                            <td>(new)</td>
+                            <td><input name="alias_new" type="text"/></td>
+                            <td><input name="label_new" type="text"/></td>
+                        </tr>
+                    </table>
+                    <p><?php submit_button(); ?></p>
+                <?php
+                } else { // enter card information
+                ?>
+                    <table class="form-table" role="presentation">
+                        <tr>
+                            <th scope="row"><label for="t_code"
+                                                   style="display:inline-block;width:16ch"Code</label></th>
+                            <td><input id="t_code" name="code" type="text" required/></td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="t_version"
+                                                   style="display:inline-block;width:16ch">Version</label></th>
+                            <td><input id="t_version" name="version" type="text" required/></td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="t_lang"
+                                                   style="display:inline-block;width:16ch">Language</label></th>
+                            <td><input id="t_lang" name="lang" type="text" required/></td>
+                        </tr>
+                    </table>
+                    <p><?php submit_button('Manage Aliases') ?></p>
+                <?php
+                }
+                ?>
+                </form>
+            </div>
+        <?php
+        }
     }
 
     function admin_page_settings()

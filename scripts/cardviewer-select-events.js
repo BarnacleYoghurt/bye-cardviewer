@@ -60,12 +60,7 @@ function update_cardviewer_card(event) {
 function update_cardviewer_image(event) {
     const blockId = event.target.parentElement.id.split('-')[1];
     jQuery(`#bye-cardviewer-card-${blockId} .bye-card-image img`).attr('src', event.target.href);
-    // TODO more robust label switching, maybe with a custom title per alt art?
-    if (jQuery(`#alts-${blockId} span`).text() === 'Standard') {
-        jQuery(`#alts-${blockId} span`).text('Alternate');
-    } else {
-        jQuery(`#alts-${blockId} span`).text('Standard');
-    }
+    jQuery(`#alts-${blockId} span`).text(event.target.title);
     jQuery(`#alts-${blockId} a`).removeClass('bye-card-curr-alt');
     jQuery(event.target).addClass('bye-card-curr-alt');
     event.preventDefault();

@@ -179,7 +179,7 @@ class Blocks
             }
 
             $currart = $carddata->getCode();
-            if (in_array($block_attributes['art'] ?? -1, $carddata->getAliases(), true)) {
+            if (in_array($block_attributes['art'] ?? -1, array_keys($carddata->getAliases()), true)) {
                 $currart = $block_attributes['art'];
             }
             $image_url = '/cards/' . $carddata->getVersion() . '/' . $expansion->code . '/' . $carddata->getLang() . '/' . $currart . '.png';
@@ -191,19 +191,21 @@ class Blocks
 
             if (array_key_exists('selectableArt', $block_attributes) && $block_attributes['selectableArt']) {
                 if (count($carddata->getAliases()) > 0) {
-                    $el_alts = sprintf('<div id="alts-%s" class="bye-card-alts">%s%s</div>', $block_id,
-                        $currart === $carddata->getCode() ? '<span>Standard</span>' : '<span>Alternate</span>',
+                    $arts = array_merge([$carddata->getCode() => 'Standard'], $carddata->getAliases());
+                    $el_alts = sprintf('<div id="alts-%s" class="bye-card-alts"><span>%s</span>%s</div>', $block_id,
+                        $arts[$currart],
                         implode('',
-                            array_map(function ($alias) use ($image_url, $currart) {
+                            array_map(function ($alias, $label) use ($image_url, $currart) {
                                 $alt_url = substr($image_url, 0, strrpos($image_url, '/') + 1) . $alias . '.png';
                                 $alt_path = substr_replace($alt_url, wp_upload_dir()['basedir'], 0, strlen(wp_upload_dir()['baseurl']));
                                 if (!file_exists($alt_path)) {
                                     $alt_url = substr($alt_url, 0, strlen($alt_url) - 4) . '.jpg';
                                 }
                                 // data-slb-active="0" keeps the lightbox plugin from acting on the fallback link!
-                                return sprintf('<a%s data-slb-active="0" target="_blank" href="%s" onclick="update_cardviewer_image(event)">●</a>',
-                                    $currart === $alias ? ' class="bye-card-curr-alt"' : '', $alt_url);
-                            }, array_merge([$carddata->getCode()], $carddata->getAliases()))
+                                return sprintf(
+                                    '<a%s data-slb-active="0" target="_blank" href="%s" title="%s" onclick="update_cardviewer_image(event)">●</a>',
+                                    $currart === $alias ? ' class="bye-card-curr-alt"' : '', $alt_url, $label);
+                            }, array_keys($arts), array_values($arts))
                         ),
                     );
                 } else {

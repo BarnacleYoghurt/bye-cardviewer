@@ -87,6 +87,7 @@ class ApiController extends WP_REST_Controller
         $cooked = [];
         foreach ($raw as $rc) {
             $cc = new CardInfo(
+                -1, //not relevant here anyway
                 $rc->code,
                 '0.0.0', //not relevant here anyway
                 $rc->expansion_id,

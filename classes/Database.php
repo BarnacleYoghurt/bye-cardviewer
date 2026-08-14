@@ -8,7 +8,7 @@ include_once("CardInfo.php");
 
 class Database
 {
-    private const DB_VERSION = '0.1.0';
+    private const DB_VERSION = '0.1.1';
     private const TN_EXPANSIONS = 'bye_expansions';
     private const TN_CARDS = 'bye_cards';
     private const TN_CARDTEXTS = 'bye_cardtexts';
@@ -79,6 +79,7 @@ class Database
                     id INT NOT NULL AUTO_INCREMENT,
                     card_id INT NOT NULL,
                     alias INT NOT NULL,
+                    label varchar(255),
                     PRIMARY KEY (id)
                 )";
 
@@ -178,22 +179,29 @@ class Database
         $canonical_version = $this->canonicalize_version_string($max_version);
 
         $raw_data = $wpdb->get_row($wpdb->prepare("SELECT
-                                    c.*, t.*, e.id as expansion_id,
-                                    GROUP_CONCAT(a.alias SEPARATOR '|') as aliases
+                                    c.*, t.*, e.id as expansion_id
                                 FROM {$this->table_cards()} c 
                                 JOIN {$this->table_expansions()} e ON c.expansion_id = e.id 
-                                JOIN {$this->table_cardtexts()} t ON c.id = t.card_id 
-                                LEFT JOIN {$this->table_alts()} a ON c.id = a.card_id
+                                JOIN {$this->table_cardtexts()} t ON c.id = t.card_id
 								WHERE c.code=%d
 								AND STRCMP(c.version, %s)<=0
 								AND t.lang=%s
-								GROUP BY c.id
 								ORDER BY c.version DESC LIMIT 1", $code, $canonical_version, $lang));
 
         if (is_null($raw_data)) {
             throw new DBException('Card not found!');
         } else {
+            $alt_data = $wpdb->get_results($wpdb->prepare(
+                "SELECT alias, label FROM {$this->table_alts()} WHERE card_id = %d",
+                $raw_data->card_id // this is the one from t.*, but hey, if it works
+            ));
+            $aliases = array_combine(
+                array_map(fn($r) => $r->alias, $alt_data),
+                array_map(fn($r) => $r->label, $alt_data)
+            );
+
             return new CardInfo(
+                $raw_data->card_id,
                 $raw_data->code,
                 $this->decanonicalize_version_string($raw_data->version),
                 $raw_data->expansion_id,
@@ -206,8 +214,7 @@ class Database
                 $raw_data->lang,
                 $raw_data->name,
                 $raw_data->description,
-                $raw_data->aliases === null ? [] :
-                    explode('|', $raw_data->aliases),
+                $aliases
             );
         }
     }
@@ -316,14 +323,22 @@ class Database
         $wpdb->update($this->table_expansions(), array('name' => $name), array('id' => $id));
     }
 
-    private function canonicalize_version_string(string $version): string
-    {
-        $canonical_version = '';
-        $parts = explode('.', $version);
-        foreach ($parts as $part) {
-            $canonical_version .= is_numeric($part) ? sprintf('%02d', $part) : '00';
+    function store_alt($cid, $alias, $label): int {
+        global $wpdb;
+        $row = $wpdb->get_row($wpdb->prepare("SELECT id FROM {$this->table_alts()} WHERE card_id = %s AND alias = %s", $cid, $alias));
+        if (is_null($row)) {
+            if ($wpdb->insert($this->table_alts(), array('card_id' => $cid, 'alias' => $alias, 'label' => $label))) {
+                return $wpdb->insert_id;
+            } else {
+                throw new DBException("Could not add alias!");
+            }
+        } else {
+            if ($wpdb->update($this->table_alts(), array('label' => $label), array('id' => $row->id))) {
+                return $row->id;
+            } else {
+                throw new DBException("Could not update label for alias!");
+            }
         }
-        return $canonical_version;
     }
 
     private function decanonicalize_version_string(string $canonical_version): string
