@@ -59,6 +59,7 @@ function update_cardviewer_card(event) {
 
 function update_cardviewer_image(event) {
     const blockId = event.target.parentElement.id.split('-')[1];
+    jQuery(`#bye-cardviewer-card-${blockId} .bye-card-image>a`).attr('href', event.target.href);
     jQuery(`#bye-cardviewer-card-${blockId} .bye-card-image img`).attr('src', event.target.href);
     jQuery(`#alts-${blockId} span`).text(event.target.title);
     jQuery(`#alts-${blockId} a`).removeClass('bye-card-curr-alt');

@@ -9,6 +9,8 @@ use PHPUnit\Framework\TestCase;
 class DatabaseTest extends WP_UnitTestCase
 {
     private int $test_exp_id;
+    private int $test_spell_id;
+    private int $test_spell_alt_id;
 
     public static function setUpBeforeClass(): void
     {
@@ -64,16 +66,22 @@ class DatabaseTest extends WP_UnitTestCase
             'version' => '000001',
             'type' => CardInfo::TYPE_SPELL
         ));
-        $tsp_id = $wpdb->insert_id;
+        $this->test_spell_id = $wpdb->insert_id;
         $wpdb->insert($this->classInstance->table_cardtexts(), array(
-            'card_id' => $tsp_id,
+            'card_id' => $this->test_spell_id,
             'name' => 'Test Spell'
         ));
         $wpdb->insert($this->classInstance->table_cardtexts(), array(
-            'card_id' => $tsp_id,
+            'card_id' => $this->test_spell_id,
             'lang' => 'de',
             'name' => 'Testzauber'
         ));
+        $wpdb->insert($this->classInstance->table_alts(), array(
+            'card_id' => $this->test_spell_id,
+            'alias' => 21,
+            'label' => 'Alt Art'
+        ));
+        $this->test_spell_alt_id = $wpdb->insert_id;
         $wpdb->insert($this->classInstance->table_cards(), array(
             'code' => 2,
             'expansion_id' => $tost_exp_id,
@@ -95,6 +103,7 @@ class DatabaseTest extends WP_UnitTestCase
         $wpdb->query("TRUNCATE TABLE {$this->classInstance->table_expansions()}");
         $wpdb->query("TRUNCATE TABLE {$this->classInstance->table_cards()}");
         $wpdb->query("TRUNCATE TABLE {$this->classInstance->table_cardtexts()}");
+        $wpdb->query("TRUNCATE TABLE {$this->classInstance->table_alts()}");
         $wpdb->query('SET FOREIGN_KEY_CHECKS = 1;');
     }
 
@@ -299,6 +308,29 @@ class DatabaseTest extends WP_UnitTestCase
 
         $this->assertNull($card);
         $this->assertNull($cardtext);
+    }
+
+    public function testStoreAltWithNewAliasCreatesEntryAndReturnsId()
+    {
+        $id = $this->classInstance->store_alt($this->test_spell_id,22, 'Something');
+
+        global $wpdb;
+        $row = $wpdb->get_row("SELECT * FROM {$this->classInstance->table_alts()} WHERE id = {$id}");
+        $this->assertEquals($this->test_spell_id, $row->card_id);
+        $this->assertEquals(22, $row->alias);
+        $this->assertEquals('Something', $row->label);
+    }
+
+    public function testStoreAltWithUsedAliasUpdatesEntryAndReturnsId()
+    {
+        $id = $this->classInstance->store_alt($this->test_spell_id,21, 'Something Else');
+        $this->assertEquals($this->test_spell_alt_id, $id);
+
+        global $wpdb;
+        $row = $wpdb->get_row("SELECT * FROM {$this->classInstance->table_alts()} WHERE id = {$id}");
+        $this->assertEquals($this->test_spell_id, $row->card_id);
+        $this->assertEquals(21, $row->alias);
+        $this->assertEquals('Something Else', $row->label);
     }
 
     public function testGetExpansionReturnsCorrectRow()

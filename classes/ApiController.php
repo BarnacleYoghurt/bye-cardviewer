@@ -150,7 +150,7 @@ class ApiController extends WP_REST_Controller
         $out = array(
             'rendered' => render_block(array(
                     'blockName'     => 'bye-cardviewer/card',
-                    'attrs'         => $data,
+                    'attrs'         => $data->get_query_params(),
                     'innerHTML'     => '',
                     'innerContent'  => array()
                 ))

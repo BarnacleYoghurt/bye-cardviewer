@@ -191,7 +191,7 @@ class Blocks
 
             if (array_key_exists('selectableArt', $block_attributes) && $block_attributes['selectableArt']) {
                 if (count($carddata->getAliases()) > 0) {
-                    $arts = array_merge([$carddata->getCode() => 'Standard'], $carddata->getAliases());
+                    $arts = [$carddata->getCode() => 'Standard'] + $carddata->getAliases();
                     $el_alts = sprintf('<div id="alts-%s" class="bye-card-alts"><span>%s</span>%s</div>', $block_id,
                         $arts[$currart],
                         implode('',
@@ -216,7 +216,6 @@ class Blocks
             // In some cases such as dynamic block rendering via API, the lightbox plugin cannot attach to the link
             // Open in new tab for those cases, still better than navigating away from the current page
             // TODO: Look into a lightbox plugin that can attach to dynamic content as well!
-            // TODO: Switching between alt arts also keeps the originally loaded image attached to the link.
             $el_img = sprintf('<div class="bye-card-image"><a target="_blank" href="%s"><img src="%s"/></a>%s</div>',
                 $image_url, $image_url, $el_alts);
 

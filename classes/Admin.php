@@ -274,14 +274,13 @@ class Admin
                 <h1>BYE Alt Arts</h1>
                 <form method="POST">
                 <?php
-                $card = $this->database->find_card($_POST['code'], $_POST['version'], $_POST['lang']);
-
                 if (isset($_POST['code'])) { // manage alts of selected card
+                    $card = $this->database->find_card($_POST['code'], $_POST['version'], $_POST['lang']);
                     foreach ($_POST as $k => $v) {
-                        if (strlen($k) >= 5 && strlen($v) > 0) {
+                        if (strlen($k) >= 6 && strlen($v) > 0) {
                             // FIXME wouldn't this have a problem when new is specified, even @expansions?
-                            if (substr($k, 0, 5) === 'label_') {
-                                $alias = substr($k, 5);
+                            if (substr($k, 0, 6) === 'label_') {
+                                $alias = substr($k, 6);
                                 if ($alias !== 'new') {
                                     try {
                                         $this->database->store_alt($card->getId(), $alias, $v);
@@ -293,7 +292,8 @@ class Admin
                         }
                     }
 
-                    if (isset($_POST['alias_new']) && isset($_POST['label_new'])) {
+                    if (isset($_POST['alias_new']) && strlen($_POST['alias_new']) > 0 &&
+                        isset($_POST['label_new']) && strlen($_POST['label_new']) > 0) {
                         $alias = $_POST['alias_new'];
                         $label = $_POST['label_new'];
                         try {
@@ -341,7 +341,7 @@ class Admin
                     <table class="form-table" role="presentation">
                         <tr>
                             <th scope="row"><label for="t_code"
-                                                   style="display:inline-block;width:16ch"Code</label></th>
+                                                   style="display:inline-block;width:16ch">Code</label></th>
                             <td><input id="t_code" name="code" type="text" required/></td>
                         </tr>
                         <tr>

@@ -341,6 +341,16 @@ class Database
         }
     }
 
+    private function canonicalize_version_string(string $version): string
+    {
+        $canonical_version = '';
+        $parts = explode('.', $version);
+        foreach ($parts as $part) {
+            $canonical_version .= is_numeric($part) ? sprintf('%02d', $part) : '00';
+        }
+        return $canonical_version;
+    }
+
     private function decanonicalize_version_string(string $canonical_version): string
     {
         $version = '';
