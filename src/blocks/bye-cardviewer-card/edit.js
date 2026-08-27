@@ -99,6 +99,15 @@ export const edit = function ({attributes, setAttributes}) {
                         }
                     }}/>
                 </fieldset>
+                <fieldset>
+                    <TextControl {...{
+                        label: "Alt Art Code",
+                        value: attributes.art,
+                        onChange: function (value) {
+                            setAttributes({art: value.trim().length > 0 ? value : null})
+                        }
+                    }}/>
+                </fieldset>
                 <Button {...{
                     text: "Reload Lists",
                     variant: "secondary",

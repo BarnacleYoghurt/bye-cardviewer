@@ -179,7 +179,7 @@ class Blocks
             }
 
             $currart = $carddata->getCode();
-            if (in_array($block_attributes['art'] ?? -1, array_keys($carddata->getAliases()), true)) {
+            if (in_array($block_attributes['art'] ?? -1, array_keys($carddata->getAliases()))) {
                 $currart = $block_attributes['art'];
             }
             $image_url = '/cards/' . $carddata->getVersion() . '/' . $expansion->code . '/' . $carddata->getLang() . '/' . $currart . '.png';
