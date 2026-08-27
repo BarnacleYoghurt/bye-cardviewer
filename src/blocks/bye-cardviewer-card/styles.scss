@@ -107,6 +107,7 @@
     span {
       font-style: italic;
       margin-right: auto;
+      margin-left: -1em;
 
       &::before {
         content: "🎨";
