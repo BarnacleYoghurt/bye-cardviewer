@@ -75,7 +75,8 @@ class Admin
                                 echo("<li style='color:darkred'>Could not insert card {$id} ({$card['name']}).</li>");
                             }
                         } else {
-                            $alts[$card['alias']] = $id;
+                            // $id here refers to the alt art while $card['alias'] is the base entry
+                            $alts[$id] = $card['alias'];
                             echo("<li>Card {$id} ({$card['name']}) not inserted - alt art of {$card['alias']}.</li>");
                         }
 
@@ -95,14 +96,14 @@ class Admin
                         }
                     }
 
-                    foreach ($alts as $code => $alias) {
+                    foreach ($alts as $alias => $code) {
                         $card = false;
                         try {
                             $card = $this->database->find_card($code, $_POST['version'], $_POST['lang']);
                         } catch (DBException $e) {
                             echo("<li style='color:darkred'>Could not find base card {$code} for alias {$alias}.</li>");
                         }
-                        if ($card) { // TODO most reasonable thing would be to check if it is CardInfo, actually
+                        if ($card instanceof CardInfo && $card->getCode() == $code) {
                             try {
                                 $this->database->store_alt($card->getId(), $alias, $_POST['label']);
                                 echo("<li>Stored alias {$alias} ({$_POST['label']}) for {$code} ({$card->getName()}).</li>");
