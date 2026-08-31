@@ -207,6 +207,7 @@ class Admin
     function admin_page_expansions()
     {
         foreach ($_POST as $k => $v) {
+            // FIXME looks like this erroneously also handles the _new fields?
             if (strlen($k) >= 5 && strlen($v) > 0) {
                 switch (substr($k, 0, 5)) {
                     case 'code_':
@@ -279,7 +280,6 @@ class Admin
                     $card = $this->database->find_card($_POST['code'], $_POST['version'], $_POST['lang']);
                     foreach ($_POST as $k => $v) {
                         if (strlen($k) >= 6 && strlen($v) > 0) {
-                            // FIXME wouldn't this have a problem when new is specified, even @expansions?
                             if (substr($k, 0, 6) === 'label_') {
                                 $alias = substr($k, 6);
                                 if ($alias !== 'new') {
@@ -305,11 +305,9 @@ class Admin
                     }
 
                     $card = $this->database->find_card($_POST['code'], $_POST['version'], $_POST['lang']);
-                    ?>
-                    <p>Managing alts of "<?= $card->getName() ?>, v<?= $card->getVersion() ?> (<?= $card->getLang() ?>)."</p>
-                    <?php
                     $alts = $card->getAltArts();
                     ?>
+                    <p>Managing alts of "<?= $card->getName() ?>, v<?= $card->getVersion() ?> (<?= $card->getLang() ?>)."</p>
                     <input name="code" type="hidden" value="<?= $_POST['code'] ?>"/>
                     <input name="version" type="hidden" value="<?= $_POST['version'] ?>"/>
                     <input name="lang" type="hidden" value="<?= $_POST['lang'] ?>"/>
