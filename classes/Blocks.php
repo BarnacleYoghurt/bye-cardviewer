@@ -179,7 +179,7 @@ class Blocks
             }
 
             $currart = $carddata->getCode();
-            if (in_array($block_attributes['art'] ?? -1, array_keys($carddata->getAliases()))) {
+            if (in_array($block_attributes['art'] ?? -1, array_keys($carddata->getAltArts()))) {
                 $currart = $block_attributes['art'];
             }
             $image_url = '/cards/' . $carddata->getVersion() . '/' . $expansion->code . '/' . $carddata->getLang() . '/' . $currart . '.png';
@@ -190,8 +190,8 @@ class Blocks
             $el_alts = '';
 
             if (array_key_exists('selectableArt', $block_attributes) && $block_attributes['selectableArt']) {
-                if (count($carddata->getAliases()) > 0) {
-                    $arts = [$carddata->getCode() => 'Standard'] + $carddata->getAliases();
+                if (count($carddata->getAltArts()) > 0) {
+                    $arts = [$carddata->getCode() => 'Standard'] + $carddata->getAltArts();
                     $el_alts = sprintf('<div id="alts-%s" class="bye-card-alts"><span>%s</span>%s</div>', $block_id,
                         $arts[$currart],
                         implode('',

@@ -308,7 +308,7 @@ class Admin
                     ?>
                     <p>Managing alts of "<?= $card->getName() ?>, v<?= $card->getVersion() ?> (<?= $card->getLang() ?>)."</p>
                     <?php
-                    $alts = $card->getAliases();
+                    $alts = $card->getAltArts();
                     ?>
                     <input name="code" type="hidden" value="<?= $_POST['code'] ?>"/>
                     <input name="version" type="hidden" value="<?= $_POST['version'] ?>"/>
@@ -356,7 +356,7 @@ class Admin
                             <td><input id="t_lang" name="lang" type="text" required/></td>
                         </tr>
                     </table>
-                    <p><?php submit_button('Manage Aliases') ?></p>
+                    <p><?php submit_button('Manage Arts') ?></p>
                 <?php
                 }
                 ?>

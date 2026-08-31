@@ -195,7 +195,7 @@ class Database
                 "SELECT alias, label FROM {$this->table_alts()} WHERE card_id = %d",
                 $raw_data->card_id // this is the one from t.*, but hey, if it works
             ));
-            $aliases = array_combine(
+            $altArts = array_combine(
                 array_map(fn($r) => $r->alias, $alt_data),
                 array_map(fn($r) => $r->label, $alt_data)
             );
@@ -214,7 +214,7 @@ class Database
                 $raw_data->lang,
                 $raw_data->name,
                 $raw_data->description,
-                $aliases
+                $altArts
             );
         }
     }
@@ -330,7 +330,7 @@ class Database
             if ($wpdb->insert($this->table_alts(), array('card_id' => $cid, 'alias' => $alias, 'label' => $label))) {
                 return $wpdb->insert_id;
             } else {
-                throw new DBException("Could not add alias!");
+                throw new DBException("Could not add alt art!");
             }
         } else {
             if ($wpdb->update($this->table_alts(), array('label' => $label), array('id' => $row->id))) {
