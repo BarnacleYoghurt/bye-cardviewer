@@ -99,6 +99,15 @@ export const edit = function ({attributes, setAttributes}) {
                         }
                     }}/>
                 </fieldset>
+                <fieldset>
+                    <TextControl {...{
+                        label: "Alt Art Code",
+                        value: attributes.art,
+                        onChange: function (value) {
+                            setAttributes({art: value.trim().length > 0 ? value : null})
+                        }
+                    }}/>
+                </fieldset>
                 <Button {...{
                     text: "Reload Lists",
                     variant: "secondary",
@@ -143,6 +152,14 @@ export const edit = function ({attributes, setAttributes}) {
                             setAttributes({urlParamLanguage: value.trim().length > 0 ? value : null})
                         }
                     }}/>
+                    <TextControl {...{
+                        label: "Art param",
+                        help: "Name of alternate art parameter",
+                        value: attributes.urlParamArt,
+                        onChange: function (value) {
+                            setAttributes({urlParamArt: value.trim().length > 0 ? value : null})
+                        }
+                    }}/>
                 </fieldset>
             </PanelBody>
             <PanelBody title={'Frontend Selection'} initialOpen={false}>
@@ -171,6 +188,15 @@ export const edit = function ({attributes, setAttributes}) {
                         checked: attributes.selectableLanguage,
                         onChange: function(event) {
                             setAttributes({selectableLanguage: !attributes.selectableLanguage})
+                        }
+                    }}>
+                    </ToggleControl>
+                    <ToggleControl {...{
+                        label: "Art selection",
+                        help: "Let the user select alternative arts of the displayed card.",
+                        checked: attributes.selectableArt,
+                        onChange: function(event) {
+                            setAttributes({selectableArt: !attributes.selectableArt})
                         }
                     }}>
                     </ToggleControl>

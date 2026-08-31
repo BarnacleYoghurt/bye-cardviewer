@@ -95,6 +95,43 @@
     font-size: 1.5em;
   }
 
+  .bye-card-alts {
+    margin-top: -1.8em;
+    position: relative; // show background over img
+    background-color: rgba(0,0,0,0.5);
+    padding-left: 1em;
+    padding-right: 1em;
+    display: flex;
+    gap: 1em;
+
+    span {
+      font-style: italic;
+      margin-right: auto;
+      margin-left: -1em;
+
+      &::before {
+        content: "🎨";
+        padding-right: 0.5em;
+      }
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+      box-shadow: none;
+
+      &:hover {
+        margin-top: -0.1em;
+      }
+
+      &.bye-card-curr-alt {
+        pointer-events: none;
+        opacity: 0.5;
+        cursor: default;
+      }
+    }
+  }
+
   @include media-mobile {
     grid-template-rows: repeat(7,auto);
     grid-template-columns: auto;

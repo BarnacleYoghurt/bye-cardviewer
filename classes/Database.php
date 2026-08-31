@@ -8,10 +8,11 @@ include_once("CardInfo.php");
 
 class Database
 {
-    private const DB_VERSION = '0.0.3';
+    private const DB_VERSION = '0.1.1';
     private const TN_EXPANSIONS = 'bye_expansions';
     private const TN_CARDS = 'bye_cards';
     private const TN_CARDTEXTS = 'bye_cardtexts';
+    private const TN_ALTS = 'bye_alts';
 
     function table_expansions()
     {
@@ -29,6 +30,12 @@ class Database
     {
         global $wpdb;
         return $wpdb->prefix . self::TN_CARDTEXTS;
+    }
+
+    function table_alts()
+    {
+        global $wpdb;
+        return $wpdb->prefix . self::TN_ALTS;
     }
 
     function setup_tables()
@@ -67,11 +74,20 @@ class Database
                     description TEXT NOT NULL DEFAULT '',
                     PRIMARY KEY (id)
                 )";
+            $sql_alts =
+                "CREATE TABLE {$this->table_alts()} (
+                    id INT NOT NULL AUTO_INCREMENT,
+                    card_id INT NOT NULL,
+                    alias INT NOT NULL,
+                    label varchar(255),
+                    PRIMARY KEY (id)
+                )";
 
             require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
             dbDelta($sql_expansions);
             dbDelta($sql_cards);
             dbDelta($sql_cardtexts);
+            dbDelta($sql_alts);
             $wpdb->query("ALTER TABLE {$this->table_cards()} ADD CONSTRAINT `u_cards_code_version` UNIQUE (code, version)");
             $wpdb->query("ALTER TABLE {$this->table_cardtexts()} ADD CONSTRAINT `u_cardtexts_cardid_lang` UNIQUE (card_id, lang)");
             $wpdb->query(
@@ -81,6 +97,11 @@ class Database
     			ON UPDATE CASCADE");
             $wpdb->query(
                 "ALTER TABLE {$this->table_cardtexts()} ADD CONSTRAINT `fk_cardtexts_cards`
+                FOREIGN KEY IF NOT EXISTS (card_id) REFERENCES {$this->table_cards()} (id)
+                ON DELETE RESTRICT 
+                ON UPDATE CASCADE");
+            $wpdb->query(
+                "ALTER TABLE {$this->table_alts()} ADD CONSTRAINT `fk_alts_cards`
                 FOREIGN KEY IF NOT EXISTS (card_id) REFERENCES {$this->table_cards()} (id)
                 ON DELETE RESTRICT 
                 ON UPDATE CASCADE");
@@ -157,9 +178,11 @@ class Database
         global $wpdb;
         $canonical_version = $this->canonicalize_version_string($max_version);
 
-        $raw_data = $wpdb->get_row($wpdb->prepare("SELECT c.*, t.*, e.id as expansion_id FROM {$this->table_cards()} c 
+        $raw_data = $wpdb->get_row($wpdb->prepare("SELECT
+                                    c.*, t.*, e.id as expansion_id
+                                FROM {$this->table_cards()} c 
                                 JOIN {$this->table_expansions()} e ON c.expansion_id = e.id 
-                                JOIN {$this->table_cardtexts()} t ON c.id = t.card_id 
+                                JOIN {$this->table_cardtexts()} t ON c.id = t.card_id
 								WHERE c.code=%d
 								AND STRCMP(c.version, %s)<=0
 								AND t.lang=%s
@@ -168,7 +191,17 @@ class Database
         if (is_null($raw_data)) {
             throw new DBException('Card not found!');
         } else {
+            $alt_data = $wpdb->get_results($wpdb->prepare(
+                "SELECT alias, label FROM {$this->table_alts()} WHERE card_id = %d",
+                $raw_data->card_id // this is the one from t.*, but hey, if it works
+            ));
+            $altArts = array_combine(
+                array_map(fn($r) => $r->alias, $alt_data),
+                array_map(fn($r) => $r->label, $alt_data)
+            );
+
             return new CardInfo(
+                $raw_data->card_id,
                 $raw_data->code,
                 $this->decanonicalize_version_string($raw_data->version),
                 $raw_data->expansion_id,
@@ -180,7 +213,8 @@ class Database
                 $raw_data->def,
                 $raw_data->lang,
                 $raw_data->name,
-                $raw_data->description
+                $raw_data->description,
+                $altArts
             );
         }
     }
@@ -287,6 +321,24 @@ class Database
     {
         global $wpdb;
         $wpdb->update($this->table_expansions(), array('name' => $name), array('id' => $id));
+    }
+
+    function store_alt($cid, $alias, $label): int {
+        global $wpdb;
+        $row = $wpdb->get_row($wpdb->prepare("SELECT id FROM {$this->table_alts()} WHERE card_id = %s AND alias = %s", $cid, $alias));
+        if (is_null($row)) {
+            if ($wpdb->insert($this->table_alts(), array('card_id' => $cid, 'alias' => $alias, 'label' => $label))) {
+                return $wpdb->insert_id;
+            } else {
+                throw new DBException("Could not add alt art!");
+            }
+        } else {
+            if ($wpdb->update($this->table_alts(), array('label' => $label), array('id' => $row->id))) {
+                return $row->id;
+            } else {
+                throw new DBException("Could not update label for alias!");
+            }
+        }
     }
 
     private function canonicalize_version_string(string $version): string

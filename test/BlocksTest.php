@@ -197,6 +197,7 @@ class BlocksTest extends WP_UnitTestCase
         $cardInfo1de = $this->createMock(CardInfo::class);
         $cardInfo1de->method('getName')->willReturn('DER KARTENNAME 1');
         $cardInfo1de->method('getTypeName')->willReturn('DER KARTENTYP 1');
+        $cardInfo1de->method('getAltArts')->willReturn([11 => 'Anders', 12 => 'Anderster']);
         $this->dbStub->method('find_card')->will($this->returnValueMap([
             [0,'0.0.0','en',$cardInfo0],
             [1,'0.0.1','en',$cardInfo1],
@@ -214,6 +215,7 @@ class BlocksTest extends WP_UnitTestCase
             'urlParamCardId' => 'cardId',
             'urlParamVersion' => 'version',
             'urlParamLanguage' => 'language',
+            'urlParamArt' => 'alt',
             'cardOfTheDay' => true
         );
 
@@ -223,11 +225,13 @@ class BlocksTest extends WP_UnitTestCase
         $_GET['cardId'] = 1;
         $_GET['version'] = '0.0.1';
         $_GET['language'] = 'de';
+        $_GET['alt'] = 12;
         $output = $this->classInstance->bye_cardviewer_card_render($blockAttributes, '');
         \WP_Block_Supports::$block_to_render = null;
 
         $this->assertStringContainsString($cardInfo1de->getName(), $output);
         $this->assertStringContainsString($cardInfo1de->getTypeName(), $output);
+        $this->assertStringContainsString('12.jpg', $output);
     }
 
     public function testBYECardviewerCardRenderSuccessPrioritizesCOTDIfNoCardIdInURL()
@@ -278,6 +282,7 @@ class BlocksTest extends WP_UnitTestCase
         $cardInfo1 = $this->createMock(CardInfo::class);
         $cardInfo1->method('getName')->willReturn('THE CARD NAME 1');
         $cardInfo1->method('getTypeName')->willReturn('THE CARD TYPE 1');
+        $cardInfo1->method('getAltArts')->willReturn([11 => 'Alternate', 12 => 'Alt of Alt']);
         $cardInfo2 = $this->createMock(CardInfo::class);
         $cardInfo2->method('getName')->willReturn('THE CARD NAME 2');
         $cardInfo2->method('getTypeName')->willReturn('THE CARD TYPE 2');
@@ -292,6 +297,7 @@ class BlocksTest extends WP_UnitTestCase
             'cardId' => 0,
             'version' => '0.0.0',
             'expansion' => 'test',
+            'art' => 11,
             'className' => '',
             'fromUrlParams' => true,
             'urlParamCardId' => 'cardId',

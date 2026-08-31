@@ -26,6 +26,7 @@ function update_cardviewer_card(event) {
     const cardSelect = jQuery(`#c_card-${blockId}`);
     const versionSelect = jQuery(`#c_version-${blockId}`);
     const langSelect = jQuery(`#c_lang-${blockId}`);
+    const artSelect = jQuery(`#alts-${blockId}`);
 
     const block = jQuery(`#bye-cardviewer-card-${blockId}`);
     const cardId = cardSelect.length > 0
@@ -44,6 +45,7 @@ function update_cardviewer_card(event) {
         `&selectableCard=${cardSelect.length}` +
         `&selectableVersion=${versionSelect.length}` +
         `&selectableLanguage=${langSelect.length}` +
+        `&selectableArt=${artSelect.length}` +
         `&blockId=${blockId}`)
         .done((res) => {
             jQuery(`#bye-cardviewer-card-${blockId}`).replaceWith(res.rendered);
@@ -53,4 +55,14 @@ function update_cardviewer_card(event) {
             console.log(err);
             jQuery(`#bye-cardviewer-card-${blockId}`).css('pointer-events','auto');
         });
+}
+
+function update_cardviewer_image(event) {
+    const blockId = event.target.parentElement.id.split('-')[1];
+    jQuery(`#bye-cardviewer-card-${blockId} .bye-card-image>a`).attr('href', event.target.href);
+    jQuery(`#bye-cardviewer-card-${blockId} .bye-card-image img`).attr('src', event.target.href);
+    jQuery(`#alts-${blockId} span`).text(event.target.title);
+    jQuery(`#alts-${blockId} a`).removeClass('bye-card-curr-alt');
+    jQuery(event.target).addClass('bye-card-curr-alt');
+    event.preventDefault();
 }
