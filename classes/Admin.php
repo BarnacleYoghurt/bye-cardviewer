@@ -45,14 +45,12 @@ class Admin
                     <?php
                     $cdb = new SQLite3($uploaddir . $filename);
                     $alts = [];
+                    $expansion_id = $_POST['expansion'];
+                    $expansion_code = $this->database->get_expansion($expansion_id)->code;
                     foreach ($_POST['ids'] as $id) {
                         $q = $cdb->prepare('SELECT d.*, t.name, t.desc FROM datas d JOIN texts t ON d.id == t.id WHERE d.id=:id');
                         $q->bindValue(':id', $id, SQLITE3_INTEGER);
                         $card = $q->execute()->fetchArray(SQLITE3_ASSOC);
-
-                        // FIXME surely this does not need to be inside the loop?
-                        $expansion_id = $_POST['expansion'];
-                        $expansion_code = $this->database->get_expansion($expansion_id)->code;
 
                         if (is_null($card['alias'])) {
                             try {
@@ -207,8 +205,7 @@ class Admin
     function admin_page_expansions()
     {
         foreach ($_POST as $k => $v) {
-            // FIXME looks like this erroneously also handles the _new fields?
-            if (strlen($k) >= 5 && strlen($v) > 0) {
+            if (!str_ends_with($k, '_new') && strlen($k) >= 5 && strlen($v) > 0) {
                 switch (substr($k, 0, 5)) {
                     case 'code_':
                         $this->database->update_expansion_code(substr($k, 5), $v);
