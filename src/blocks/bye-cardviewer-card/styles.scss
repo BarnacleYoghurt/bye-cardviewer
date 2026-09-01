@@ -30,6 +30,10 @@
     flex-flow: row wrap;
     gap: 1em;
     margin-bottom: 1em;
+
+    select {
+      max-width: 325px;
+    }
   }
 
   .bye-card-image {
